@@ -1,0 +1,86 @@
+{
+  "CSS-002": {
+    "occurrences": 61,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-03T23:49:18.655Z",
+    "last_seen": "2026-09-04T00:26:56.617Z"
+  },
+  "CSS-003": {
+    "occurrences": 4,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-03T23:49:18.686Z",
+    "last_seen": "2026-09-04T00:26:56.618Z"
+  },
+  "CC-003": {
+    "occurrences": 6,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-03T23:51:53.105Z",
+    "last_seen": "2026-09-04T01:07:21.203Z"
+  },
+  "ASYNC-001": {
+    "occurrences": 74,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-03T23:51:53.129Z",
+    "last_seen": "2026-09-04T01:07:21.276Z"
+  },
+  "CC-004": {
+    "occurrences": 21,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-03T23:51:53.145Z",
+    "last_seen": "2026-09-04T01:07:21.322Z"
+  },
+  "JS-001": {
+    "occurrences": 24,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-03T23:51:53.148Z",
+    "last_seen": "2026-09-04T01:07:21.336Z"
+  },
+  "SEC-004": {
+    "occurrences": 609,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-04T00:29:24.566Z",
+    "last_seen": "2026-09-21T15:29:41.306Z"
+  },
+  "HTML-002": {
+    "occurrences": 35,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-04T00:51:19.566Z",
+    "last_seen": "2026-09-21T15:29:41.261Z"
+  },
+  "HTML-001": {
+    "occurrences": 400,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-04T00:51:19.567Z",
+    "last_seen": "2026-09-21T15:29:41.290Z"
+  },
+  "REACT-003": {
+    "occurrences": 198,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-21T12:27:07.432Z",
+    "last_seen": "2026-09-21T15:29:41.305Z"
+  },
+  "ARCH-003": {
+    "occurrences": 126,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-21T12:27:07.585Z",
+    "last_seen": "2026-09-21T15:29:41.313Z"
+  },
+  "ERR-001": {
+    "occurrences": 9,
+    "confidence": 1,
+    "mastered_explicitly": false,
+    "first_seen": "2026-09-21T14:25:38.592Z",
+    "last_seen": "2026-09-21T15:29:41.271Z"
+  }
+}

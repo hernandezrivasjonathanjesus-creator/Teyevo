@@ -1,0 +1,567 @@
+/* ============================================
+   ESTILOS PRINCIPALES
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #FFFFFF;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* ============================================
+   CONTENEDOR PRINCIPAL
+   ============================================ */
+
+.login-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #FFFFFF;
+}
+
+/* ============================================
+   TARJETA DE LOGIN (Bordes súper visibles)
+   ============================================ */
+
+.login-card {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    max-width: 420px;
+    padding: 48px 40px;
+    background: #FFFFFF;
+    border-radius: 24px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.12),
+        0 8px 24px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(10px);
+    animation: fadeInUp 0.6s ease-out;
+    
+    /* ⭐ BORDE DOBLE BIEN MARCADO (Externo Rojo, Interno Azul) */
+    border: 5px solid #E31E24; /* Borde externo grueso rojo */
+    outline: 3px solid #1A3C8A; /* Borde interno azul */
+    outline-offset: -8px; /* Hace que el azul se pegue al borde interno */
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ============================================
+   VIDEO PEQUEÑO ARRIBA DEL LOGO
+   ============================================ */
+
+.header-video {
+    width: 150px;
+    height: auto;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    object-fit: cover;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #000;
+    /* Borde del video también con los colores de Teyevo */
+    border: 3px solid #E31E24; 
+    outline: 2px solid #1A3C8A;
+    outline-offset: -5px;
+}
+
+/* ============================================
+   HEADER - LOGO Y SLOGAN (Animación letra por letra)
+   ============================================ */
+
+.login-header {
+    text-align: center;
+    margin-bottom: 36px;
+    min-height: 80px; /* Reserva espacio para que no salte el formulario */
+}
+
+/* Estilos base del logo */
+.logo-text {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 3px solid #E31E24; /* Cursor de escritura */
+    width: 0; /* Inicia vacío */
+    animation: typing 2.5s steps(6, end) forwards, blinkCursor 0.75s step-end infinite;
+    display: inline-block;
+}
+
+/* Colores de las letras */
+.logo-red { color: #E31E24; }
+.logo-blue { color: #1A3C8A; }
+
+.slogan {
+    font-size: 16px;
+    color: #6B7280;
+    font-weight: 400;
+    letter-spacing: 2px;
+    margin-top: 8px;
+    opacity: 0;
+    animation: fadeInSlogan 0.5s ease forwards 2s; /* Aparece después de escribir */
+}
+
+/* Animación de la máquina de escribir */
+@keyframes typing {
+    from { width: 0; }
+    to { width: 140px; } /* Ajusta este ancho al tamaño exacto de la palabra */
+}
+
+/* Parpadeo del cursor */
+@keyframes blinkCursor {
+    50% { border-color: transparent; }
+}
+
+/* Aparición del slogan */
+@keyframes fadeInSlogan {
+    to { opacity: 1; }
+}
+
+/* ============================================
+   FORMULARIO
+   ============================================ */
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1F2937;
+    letter-spacing: 0.3px;
+}
+
+.form-group input {
+    padding: 12px 16px;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+    background: #FAFBFC;
+    color: #1F2937;
+    width: 100%;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #1A3C8A;
+    box-shadow: 0 0 0 4px rgba(26, 60, 138, 0.1);
+    background: #FFFFFF;
+}
+
+.form-group input::placeholder {
+    color: #9CA3AF;
+}
+
+.form-group input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   CAMPO DE CONTRASEÑA CON TOGGLE
+   ============================================ */
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-wrapper input {
+    padding-right: 48px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    color: #6B7280;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-password:hover {
+    color: #1F2937;
+}
+
+/* ============================================
+   BOTÓN PRINCIPAL
+   ============================================ */
+
+.btn-login {
+    padding: 14px;
+    background: linear-gradient(135deg, #1A3C8A 0%, #E31E24 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 14px rgba(26, 60, 138, 0.25);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 52px;
+}
+
+.btn-login:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26, 60, 138, 0.35);
+}
+
+.btn-login:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-login:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Loader del botón */
+.loader {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #FFFFFF;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   ENLACES Y TEXTOS
+   ============================================ */
+
+.forgot-password {
+    text-align: right;
+    margin-top: -4px;
+}
+
+.forgot-password a {
+    font-size: 13px;
+    color: #1A3C8A;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+    cursor: pointer;
+}
+
+.forgot-password a:hover {
+    color: #E31E24;
+    text-decoration: underline;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 8px 0 4px;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #E5E7EB;
+}
+
+.divider span {
+    font-size: 13px;
+    color: #9CA3AF;
+    font-weight: 500;
+}
+
+/* ============================================
+   SECCIÓN DE REGISTRO
+   ============================================ */
+
+.register-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.register-text {
+    font-size: 14px;
+    color: #6B7280;
+}
+
+.btn-register {
+    padding: 8px 20px;
+    background: transparent;
+    color: #1A3C8A;
+    border: 2px solid #1A3C8A;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-register:hover {
+    background: #1A3C8A;
+    color: white;
+    transform: scale(1.02);
+}
+
+/* ============================================
+   MENSAJES DE FEEDBACK
+   ============================================ */
+
+.message-container {
+    margin-bottom: 16px;
+}
+
+.message {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message.error {
+    background: #FEE2E2;
+    color: #DC2626;
+    border: 1px solid #FCA5A5;
+}
+
+.message.success {
+    background: #D1FAE5;
+    color: #065F46;
+    border: 1px solid #6EE7B7;
+}
+
+.message.info {
+    background: #DBEAFE;
+    color: #1E40AF;
+    border: 1px solid #93C5FD;
+}
+
+/* ============================================
+   MODAL
+   ============================================ */
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: #FFFFFF;
+    padding: 40px;
+    border-radius: 24px;
+    max-width: 480px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlide 0.3s ease;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes modalSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #6B7280;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: #1F2937;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 480px) {
+    .login-card {
+        margin: 16px;
+        padding: 32px 20px;
+        border-radius: 16px;
+        border-width: 4px;
+        outline-offset: -6px;
+    }
+
+    .logo-text {
+        font-size: 34px;
+    }
+
+    .slogan {
+        font-size: 14px;
+    }
+
+    .header-video {
+        width: 120px;
+    }
+
+    .form-group input {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+
+    .btn-login {
+        font-size: 15px;
+        min-height: 48px;
+        padding: 12px;
+    }
+
+    .register-section {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-register {
+        width: 100%;
+        text-align: center;
+    }
+
+    .modal-content {
+        padding: 24px 20px;
+        border-radius: 16px;
+    }
+}
+
+@media (max-width: 360px) {
+    .login-card {
+        padding: 20px 16px;
+    }
+
+    .logo-text {
+        font-size: 28px;
+    }
+
+    .login-header {
+        margin-bottom: 24px;
+    }
+
+    .header-video {
+        width: 100px;
+    }
+}
+
+/* Scrollbar personalizado */
+.modal-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #F1F1F1;
+    border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #1A3C8A;
+    border-radius: 4px;
+}

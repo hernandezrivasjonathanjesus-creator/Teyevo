@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teyevo - Iniciar Sesión</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===== RESET Y BASE ===== */
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f2f5 0%, #e4e8ee 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ===== TARJETA DE LOGIN ===== */
+        .login-card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            width: 440px;
+            max-width: 92vw;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            border: 3px solid transparent;
+            background-image: linear-gradient(#ffffff, #ffffff),
+                              linear-gradient(135deg, #e53935 0%, #1e88e5 100%);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+
+        .header-video {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            object-fit: cover;
+            display: block;
+            background-color: #000;
+        }
+
+        .logo-text {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 0 0 5px 0;
+            letter-spacing: -1px;
+        }
+        .logo-red { color: #e53935; }
+        .logo-blue { color: #1e88e5; }
+        .slogan { color: #666; margin: 0 0 25px 0; font-size: 16px; }
+
+        /* ===== SWITCH DE ROL ===== */
+        .role-switch {
+            display: flex;
+            background: #f0f2f5;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .role-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .role-btn.active {
+            background: #fff;
+            color: #1e88e5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* ===== FORMULARIOS ===== */
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+            width: 100%;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #1e88e5;
+            box-shadow: 0 0 0 3px rgba(30,136,229,0.12);
+        }
+        .form-group input.invalid {
+            border-color: #e53935;
+            box-shadow: 0 0 0 3px rgba(229,57,53,0.12);
+        }
+
+        /* ===== PASSWORD WRAPPER ===== */
+        .password-wrapper { position: relative; }
+        .password-wrapper input { padding-right: 45px; }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            opacity: 0.5;
+            padding: 5px;
+            transition: opacity 0.2s;
+        }
+        .toggle-password:hover { opacity: 1; }
+
+        /* ===== BOTONES ===== */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-login:hover:not(:disabled) {
+            box-shadow: 0 6px 18px rgba(30,136,229,0.35);
+            transform: translateY(-1px);
+        }
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-google {
+            width: 100%;
+            padding: 12px;
+            background: #fff;
+            color: #333;
+            border: 1.5px solid #dadce0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: background 0.2s, box-shadow 0.2s;
+            margin-bottom: 12px;
+        }
+        .btn-google:hover {
+            background: #f8f9fa;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .btn-sms {
+            width: 100%;
+            padding: 12px;
+            background: #fff;
+            color: #1e88e5;
+            border: 1.5px solid #1e88e5;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 12px;
+        }
+        .btn-sms:hover { background: #e3f2fd; }
+
+        /* ===== DIVIDER ===== */
+        .divider {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin: 16px 0;
+            color: #999;
+            font-size: 13px;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+        }
+        .divider span { padding: 0 12px; }
+
+        .forgot-password {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .forgot-password a {
+            color: #1e88e5;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .forgot-password a:hover { text-decoration: underline; }
+
+        /* ===== MENSAJES ===== */
+        .message {
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            width: 100%;
+            animation: slideDown 0.3s ease;
+        }
+        .message.error { background: #FEE2E2; color: #DC2626; }
+        .message.success { background: #D1FAE5; color: #065F46; }
+        .message:empty { display: none; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== LOADER ===== */
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== MODALES ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .modal.show {
+            display: flex;
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-content {
+            background: #fff;
+            padding: 32px;
+            border-radius: 20px;
+            max-width: 520px;
+            width: 100%;
+            max-height: 92vh;
+            overflow-y: auto;
+            border: 3px solid transparent;
+            background-image: linear-gradient(#fff, #fff),
+                              linear-gradient(135deg, #e53935, #1e88e5);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            animation: zoomIn 0.3s ease;
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 { margin: 0; font-size: 22px; }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            color: #333;
+            line-height: 1;
+            padding: 0 5px;
+            transition: color 0.2s;
+        }
+        .modal-close:hover { color: #e53935; }
+
+        /* ===== SECCIÓN DE FOTOS ===== */
+        .photo-section {
+            margin: 20px 0;
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fb;
+            border-radius: 14px;
+        }
+        .photo-section h4 {
+            margin: 0 0 16px 0;
+            color: #333;
+            font-size: 15px;
+        }
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ccc;
+            overflow: hidden;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .photo-preview.has-photo {
+            border: 2px solid #22c55e;
+            box-shadow: 0 0 0 4px rgba(34,197,94,0.15);
+        }
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-preview::after {
+            content: '✓';
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 26px;
+            height: 26px;
+            background: #22c55e;
+            color: #fff;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 15px;
+            border: 2px solid #fff;
+        }
+        .photo-preview.has-photo::after { display: flex; }
+
+        .capture-btn {
+            background: linear-gradient(135deg, #e53935, #c62828);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            margin: 5px;
+            transition: transform 0.15s, box-shadow 0.2s;
+        }
+        .capture-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(229,57,53,0.3);
+        }
+
+        /* ===== CHECKBOX TÉRMINOS ===== */
+        .checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 13px;
+            color: #555;
+            text-align: left;
+            margin: 16px 0;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+        .checkbox-label input {
+            width: 18px;
+            height: 18px;
+            margin-top: 1px;
+            accent-color: #1e88e5;
+            flex-shrink: 0;
+        }
+        .checkbox-label a { color: #1e88e5; text-decoration: none; }
+        .checkbox-label a:hover { text-decoration: underline; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .login-card { padding: 24px 20px; }
+            .logo-text { font-size: 34px; }
+            .header-video { width: 120px; height: 120px; }
+            .modal-content { padding: 24px 20px; }
+            .photo-preview { width: 100px; height: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== TARJETA DE LOGIN ===== -->
+    <main class="login-card" id="loginCard">
+        <video class="header-video" autoplay muted loop playsinline
+               poster="{{ url_for('static', filename='poster.jpg') }}">
+            <source src="{{ url_for('static', filename='video.mp4') }}" type="video/mp4">
+            Tu navegador no soporta videos.
+        </video>
+
+        <div class="login-header">
+            <h1 class="logo-text">
+                <span class="logo-red">Tey</span><span class="logo-blue">evo</span>
+            </h1>
+            <p class="slogan">A dónde quieras</p>
+        </div>
+
+        <!-- Switch de Rol -->
+        <div class="role-switch" role="tablist" aria-label="Seleccionar rol">
+            <button type="button" class="role-btn active" data-role="pasajero" role="tab" aria-selected="true">
+                 Pasajero
+            </button>
+            <button type="button" class="role-btn" data-role="conductor" role="tab" aria-selected="false">
+                 Conductor
+            </button>
+        </div>
+
+        <!-- Contenedor de mensajes -->
+        <div id="messageContainer" role="alert" aria-live="polite"></div>
+
+        <!-- Botones Sociales -->
+        <button type="button" class="btn-google" id="btnGoogle" aria-label="Continuar con Google">
+            <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/>
+                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+                <path fill="#4CAF50" d="M24 44c5.4 0 10.3-2.1 14-5.4l-6.5-5.5C29.5 34.7 26.9 36 24 36c-5.3 0-9.7-3.1-11.3-7.9l-6.5 5C9.6 39.6 16.3 44 24 44z"/>
+                <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.5 5.5C41.9 35.8 44 30.3 44 24c0-1.3-.1-2.3-.4-3.5z"/>
+            </svg>
+            Continuar con Google
+        </button>
+
+        <button type="button" class="btn-sms" id="btnSMS" aria-label="Continuar con teléfono">
+            📱 Continuar con mi teléfono
+        </button>
+
+        <div class="divider"><span>o usa tu correo</span></div>
+
+        <!-- Formulario de Login -->
+        <form id="loginForm" class="login-form" novalidate>
+            <div class="form-group">
+                <label for="email">Correo Electrónico</label>
+                <input type="email" id="email" name="email"
+                       placeholder="Ingrese su usuario"
+                       autocomplete="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password"
+                           placeholder="Ingrese su contraseña"
+                           autocomplete="current-password"
+                           required minlength="6">
+                    <button type="button" class="toggle-password"
+                            onclick="togglePassword('password', this)"
+                            aria-label="Mostrar contraseña">👁️</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login" id="btnLogin">
+                <span id="btnText">Iniciar Sesión</span>
+                <span id="btnLoader" class="loader" style="display: none;"></span>
+            </button>
+
+            <div class="forgot-password">
+                <a href="#" id="forgotPassword">¿Olvidó su contraseña?</a>
+            </div>
+            <div class="forgot-password" style="margin-top: 10px;">
+                <a href="#" id="btnRegister">¿No tienes cuenta? <strong>Regístrate</strong></a>
+            </div>
+        </form>
+    </main>
+
+    <!-- ===== MODAL DE REGISTRO ===== -->
+    <div class="modal" id="registerModal" role="dialog" aria-modal="true" aria-labelledby="regTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="regTitle">Registro Completo</h2>
+                <button class="modal-close" id="closeModal" aria-label="Cerrar">&times;</button>
+            </div>
+
+            <div id="registerMessage" role="alert" aria-live="polite"></div>
+
+            <form id="registerForm" novalidate>
+                <div class="form-group">
+                    <label for="regNombre">Nombre y Apellido</label>
+                    <input type="text" id="regNombre" placeholder="Ej: Juan Pérez" required>
+                </div>
+                <div class="form-group">
+                    <label for="regCi">Número de Cédula (CI)</label>
+                    <input type="text" id="regCi" placeholder="Ej: 12345678"
+                           inputmode="numeric" maxlength="8" required>
+                </div>
+                <div class="form-group">
+                    <label for="regFechaNac">Fecha de Nacimiento</label>
+                    <input type="date" id="regFechaNac" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Correo Electrónico</label>
+                    <input type="email" id="regEmail" placeholder="tucorreo@ejemplo.com"
+                           autocomplete="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="regTelefono">Número de Teléfono</label>
+                    <input type="tel" id="regTelefono" placeholder="Ej: 4121234567"
+                           autocomplete="tel" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Contraseña</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="regPassword"
+                               placeholder="Mínimo 6 caracteres"
+                               autocomplete="new-password"
+                               required minlength="6">
+                        <button type="button" class="toggle-password"
+                                onclick="togglePassword('regPassword', this)"
+                                aria-label="Mostrar contraseña">👁️</button>
+                    </div>
+                </div>
+
+                <!-- Captura de Fotos -->
+                <div class="photo-section">
+                    <h4>🔒 Verificación de Identidad</h4>
+
+                    <div>
+                        <p style="margin: 0 0 8px;">Foto de tu CI (cámara trasera)</p>
+                        <div class="photo-preview" id="ciPreview">
+                            <img id="ciImage" alt="Foto de CI" style="display: none;">
+                        </div>
+                        <br>
+                        <button type="button" class="capture-btn" onclick="openCamera('ci')">
+                            📷 Tomar Foto de CI
+                        </button>
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <p style="margin: 0 0 8px;">Selfie de Verificación (cámara frontal)</p>
+                        <div class="photo-preview" id="selfiePreview">
+                            <img id="selfieImage" alt="Selfie" style="display: none;">
+                        </div>
+                        <br>
+                        <button type="button" class="capture-btn" onclick="openCamera('selfie')">
+                             Tomar Selfie
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Términos y Condiciones -->
+                <label class="checkbox-label">
+                    <input type="checkbox" id="aceptoTerminos" required>
+                    <span>
+                        Acepto los <a href="#" target="_blank">Términos y Condiciones</a>
+                        y la <a href="#" target="_blank">Política de Privacidad</a> de Teyevo.
+                    </span>
+                </label>
+
+                <button type="submit" class="btn-login" id="btnRegisterSubmit">
+                    <span id="regBtnText">Crear Cuenta</span>
+                    <span id="regBtnLoader" class="loader" style="display: none;"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== MODAL DE CÁMARA ===== -->
+    <div class="modal" id="cameraModal" role="dialog" aria-modal="true" aria-labelledby="cameraTitle">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="cameraTitle">Capturar Foto</h2>
+                <button class="modal-close" onclick="closeCamera()" aria-label="Cerrar">&times;</button>
+            </div>
+            <div style="text-align: center;">
+                <video id="cameraVideo" autoplay playsinline
+                       style="width: 100%; border-radius: 12px; background: #000; max-height: 420px;"></video>
+                <br><br>
+                <button class="btn-login" onclick="capturePhoto()"
+                        style="width: auto; padding: 10px 30px; display: inline-flex;">
+                    Capturar
+                </button>
+                <button class="btn-login" onclick="closeCamera()"
+                        style="width: auto; padding: 10px 30px; background: #666; display: inline-flex;">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        /* ========== UTILIDADES ========== */
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            btn.textContent = isPassword ? '🙈' : '👁️';
+            btn.setAttribute('aria-label', isPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        }
+
+        function showMessage(containerId, text, type = 'error') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="message ${type}">${text}</div>`;
+            if (type === 'success') {
+                setTimeout(() => { container.innerHTML = ''; }, 4000);
+            }
+        }
+
+        function clearMessage(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        function setLoading(btn, textEl, loaderEl, loading) {
+            btn.disabled = loading;
+            textEl.style.display = loading ? 'none' : 'inline';
+            loaderEl.style.display = loading ? 'inline-block' : 'none';
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        /* ========== SWITCH DE ROL ========== */
+        const roleButtons = document.querySelectorAll('.role-btn');
+        let currentRole = 'pasajero';
+
+        roleButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                roleButtons.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-selected', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
+                currentRole = btn.dataset.role;
+            });
+        });
+
+        /* ========== VALIDACIÓN CI (SOLO NÚMEROS) ========== */
+        const regCi = document.getElementById('regCi');
+        regCi.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 8);
+        });
+
+        /* ========== LOGIN ========== */
+        const loginForm = document.getElementById('loginForm');
+        const btnLogin = document.getElementById('btnLogin');
+        const btnText = document.getElementById('btnText');
+        const btnLoader = document.getElementById('btnLoader');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessage('messageContainer');
+
+            // Validaciones
+            if (!isValidEmail(emailInput.value)) {
+                emailInput.classList.add('invalid');
+                showMessage('messageContainer', 'Por favor, ingresa un correo válido.', 'error');
+                emailInput.focus();
+                return;
+            }
+            emailInput.classList.remove('invalid');
+
+            if (passwordInput.value.length < 6) {
+                passwordInput.classList.add('invalid');
+                showMessage('messageContainer', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+                passwordInput.focus();
+                return;
+            }
+            passwordInput.classList.remove('invalid');
+
+            // Loading
+            setLoading(btnLogin, btnText, btnLoader, true);
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: emailInput.value.trim(),
+                        password: passwordInput.value,
+                        role: currentRole
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Credenciales incorrectas');
+                }
+
+                // ✅ Login exitoso
+                showMessage('messageContainer', '¡Bienvenido! Redirigiendo al panel...', 'success');
+
+                localStorage.setItem('teyevo_user', JSON.stringify(data.user));
+                if (data.access_token) {
+                    localStorage.setItem('teyevo_token', data.access_token);
+                }
+
+                // 🚀 Redirigir al dashboard
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 800);
+
+            } catch (error) {
+                showMessage('messageContainer', error.message || 'Error al iniciar sesión. Intenta de nuevo.', 'error');
+            } finally {
+                setLoading(btnLogin, btnText, btnLoader, false);
+            }
+        });
+
+        // Limpiar error al escribir
+        emailInput.addEventListener('input', () => emailInput.classList.remove('invalid'));
+        passwordInput.addEventListener('input', () => passwordInput.classList.remove('invalid'));
+
+        /* ========== BOTONES SOCIALES ========== */
+        document.getElementById('btnGoogle').addEventListener('click', () => {
+            alert('Login con Google: próximamente disponible');
+        });
+
+        document.getElementById('btnSMS').addEventListener('click', () => {
+            alert('Login por SMS: próximamente disponible');
+        });
+
+        document.getElementById('forgotPassword').addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = prompt('Ingresa tu correo para recuperar la contraseña:');
+            if (email && isValidEmail(email)) {
+                showMessage('messageContainer', 'Se envió un enlace de recuperación a tu correo.', 'success');
+            }
+        });
+
+        /* ========== MODAL REGISTRO ========== */
+        const registerModal = document.getElementById('registerModal');
+
+        document.getElementById('btnRegister').addEventListener('click', (e) => {
+            e.preventDefault();
+            registerModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        });
+
+        document.getElementById('closeModal').addEventListener('click', closeRegisterModal);
+
+        function closeRegisterModal() {
+            registerModal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Cerrar al hacer click fuera
+        registerModal.addEventListener('click', (e) => {
+            if (e.target === registerModal) closeRegisterModal();
+        });
+
+        /* ========== REGISTRO ========== */
+        const registerForm = document.getElementById('registerForm');
+        const btnRegisterSubmit = document.getElementById('btnRegisterSubmit');
+        const regBtnText = document.getElementById('regBtnText');
+        const regBtnLoader = document.getElementById('regBtnLoader');
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessage('registerMessage');
+
+            // Validaciones
+            if (!document.getElementById('regNombre').value.trim()) {
+                return showMessage('registerMessage', 'Ingresa tu nombre completo.', 'error');
+            }
+            if (!/^\d{6,8}$/.test(regCi.value)) {
+                return showMessage('registerMessage', 'La cédula debe tener entre 6 y 8 dígitos.', 'error');
+            }
+            if (!document.getElementById('regFechaNac').value) {
+                return showMessage('registerMessage', 'Selecciona tu fecha de nacimiento.', 'error');
+            }
+            const regEmail = document.getElementById('regEmail').value;
+            if (!isValidEmail(regEmail)) {
+                return showMessage('registerMessage', 'Correo electrónico inválido.', 'error');
+            }
+            const regTel = document.getElementById('regTelefono').value;
+            if (!/^\d{7,11}$/.test(regTel.replace(/\D/g, ''))) {
+                return showMessage('registerMessage', 'Número de teléfono inválido.', 'error');
+            }
+            if (document.getElementById('regPassword').value.length < 6) {
+                return showMessage('registerMessage', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+            }
+            if (!document.getElementById('ciImage').src) {
+                return showMessage('registerMessage', 'Debes capturar la foto de tu CI.', 'error');
+            }
+            if (!document.getElementById('selfieImage').src) {
+                return showMessage('registerMessage', 'Debes capturar tu selfie de verificación.', 'error');
+            }
+            if (!document.getElementById('aceptoTerminos').checked) {
+                return showMessage('registerMessage', 'Debes aceptar los Términos y Condiciones.', 'error');
+            }
+
+            // Loading
+            setLoading(btnRegisterSubmit, regBtnText, regBtnLoader, true);
+
+            try {
+                const payload = {
+                    nombre: document.getElementById('regNombre').value.trim(),
+                    numero_identidad: regCi.value,
+                    fecha_nacimiento: document.getElementById('regFechaNac').value,
+                    email: regEmail.trim(),
+                    telefono: regTel.replace(/\D/g, ''),
+                    password: document.getElementById('regPassword').value,
+                    foto_ci: document.getElementById('ciImage').src,
+                    foto_selfie: document.getElementById('selfieImage').src
+                };
+
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Error al crear la cuenta');
+                }
+
+                showMessage('registerMessage', data.message || '¡Cuenta creada exitosamente! Ya puedes iniciar sesión.', 'success');
+
+                setTimeout(() => {
+                    closeRegisterModal();
+                    registerForm.reset();
+                    document.getElementById('ciImage').style.display = 'none';
+                    document.getElementById('selfieImage').style.display = 'none';
+                    document.getElementById('ciPreview').classList.remove('has-photo');
+                    document.getElementById('selfiePreview').classList.remove('has-photo');
+                }, 2500);
+
+            } catch (error) {
+                showMessage('registerMessage', error.message || 'Error al crear la cuenta.', 'error');
+            } finally {
+                setLoading(btnRegisterSubmit, regBtnText, regBtnLoader, false);
+            }
+        });
+
+        /* ========== CÁMARA ========== */
+        let currentTarget = '';
+        let cameraStream = null;
+
+        async function openCamera(type) {
+            currentTarget = type;
+            const modal = document.getElementById('cameraModal');
+            modal.classList.add('show');
+            document.getElementById('cameraTitle').textContent =
+                type === 'ci' ? '📷 Foto de CI' : '🤳 Selfie';
+
+            const constraints = {
+                video: {
+                    facingMode: type === 'selfie' ? 'user' : 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            };
+
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                document.getElementById('cameraVideo').srcObject = cameraStream;
+            } catch (err) {
+                console.error('Error al acceder a la cámara:', err);
+                alert('No se pudo acceder a la cámara. Verifica los permisos del navegador.');
+                closeCamera();
+            }
+        }
+
+        function closeCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            document.getElementById('cameraModal').classList.remove('show');
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.createElement('canvas');
+
+            // Limitar tamaño para no sobrecargar
+            const MAX_WIDTH = 800;
+            const scale = Math.min(1, MAX_WIDTH / video.videoWidth);
+            canvas.width = video.videoWidth * scale;
+            canvas.height = video.videoHeight * scale;
+
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+            if (currentTarget === 'ci') {
+                const img = document.getElementById('ciImage');
+                img.src = dataUrl;
+                img.style.display = 'block';
+                document.getElementById('ciPreview').classList.add('has-photo');
+            } else {
+                const img = document.getElementById('selfieImage');
+                img.src = dataUrl;
+                img.style.display = 'block';
+                document.getElementById('selfiePreview').classList.add('has-photo');
+            }
+
+            closeCamera();
+        }
+
+        /* ========== TECLA ESCAPE ========== */
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (document.getElementById('cameraModal').classList.contains('show')) {
+                    closeCamera();
+                } else if (registerModal.classList.contains('show')) {
+                    closeRegisterModal();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

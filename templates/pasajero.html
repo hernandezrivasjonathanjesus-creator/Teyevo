@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Teyevo - Pasajero</title>
+</head>
+<body style="font-family: sans-serif; padding: 40px; text-align: center;">
+    <h1>🚕 Panel del Pasajero</h1>
+    <p>Pide tu viaje y revisa tus tarifas</p>
+    <a href="/api/logout" onclick="event.preventDefault(); fetch('/api/logout',{method:'POST'}).then(()=>location.href='/')">Cerrar sesión</a>
+</body>
+</html>

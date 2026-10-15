@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teyevo - Panel Conductor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; padding: 20px; min-height: 100vh; }
+        .container { max-width: 500px; margin: 0 auto; }
+        
+        .header {
+            background: linear-gradient(135deg, #1e88e5, #1565c0);
+            color: white;
+            padding: 24px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 26px; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        
+        .card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card h3 { font-size: 15px; margin-bottom: 14px; color: #333; display: flex; align-items: center; gap: 8px; }
+        
+        /* Estado de trabajo */
+        .status-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .status-option {
+            padding: 14px 10px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            background: #fff;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .status-option:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .status-option .icon { font-size: 24px; display: block; margin-bottom: 4px; }
+        .status-option .label { font-size: 12px; font-weight: 600; color: #666; }
+        .status-option.active { border-width: 2px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .status-option.active[data-status="disponible"] { border-color: #22c55e; background: #f0fdf4; }
+        .status-option.active[data-status="disponible"] .label { color: #166534; }
+        .status-option.active[data-status="en_viaje"] { border-color: #f59e0b; background: #fffbeb; }
+        .status-option.active[data-status="en_viaje"] .label { color: #92400e; }
+        .status-option.active[data-status="descanso"] { border-color: #ef4444; background: #fef2f2; }
+        .status-option.active[data-status="descanso"] .label { color: #991b1b; }
+        .status-option.active[data-status="desconectado"] { border-color: #9ca3af; background: #f9fafb; }
+        .status-option.active[data-status="desconectado"] .label { color: #374151; }
+        
+        /* 🇻🇪 Selector de estados de Venezuela */
+        .estado-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+        .estado-option {
+            padding: 10px 8px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            background: #fff;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .estado-option:hover { border-color: #1e88e5; background: #f0f9ff; }
+        .estado-option.active {
+            border-color: #1e88e5;
+            background: #e3f2fd;
+            font-weight: 600;
+        }
+        .estado-codigo {
+            background: #1e88e5;
+            color: #fff;
+            font-weight: 700;
+            padding: 3px 7px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+        .estado-option.active .estado-codigo {
+            background: #1565c0;
+        }
+        .estado-nombre {
+            color: #333;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+        
+        .search-estado {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 12px;
+            outline: none;
+        }
+        .search-estado:focus { border-color: #1e88e5; }
+        
+        /* GPS */
+        .gps-status { display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; margin-bottom: 16px; font-weight: 600; }
+        .gps-status.inactive { background: #f3f4f6; color: #6b7280; }
+        .gps-status.searching { background: #fef3c7; color: #92400e; }
+        .gps-status.active { background: #dcfce7; color: #166534; }
+        .gps-status.error { background: #fee2e2; color: #991b1b; }
+        .gps-dot { width: 14px; height: 14px; border-radius: 50%; background: currentColor; }
+        .gps-status.active .gps-dot { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        
+        .coords { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+        .coord-box { background: #f8f9fb; padding: 12px; border-radius: 10px; }
+        .coord-label { font-size: 11px; color: #6b7280; text-transform: uppercase; }
+        .coord-value { font-size: 16px; font-weight: 700; margin-top: 4px; font-family: monospace; }
+        
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .btn-primary { background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; }
+        .btn-danger { background: #e53935; color: white; }
+        
+        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-row span { color: #6b7280; }
+        .info-row strong { color: #111; }
+        
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 13px; font-weight: 600;
+        }
+        .current-estado {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px; background: #e3f2fd;
+            border-radius: 12px; margin-bottom: 12px;
+        }
+        .current-estado .flag { font-size: 28px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- Header -->
+        <div class="header">
+            <h1>🚗 Panel Conductor</h1>
+            <p id="driverName">Cargando...</p>
+        </div>
+
+        <!-- 🇻🇪 ESTADO DE VENEZUELA -->
+        <div class="card">
+            <h3>🇻🇪 ¿Dónde operas?</h3>
+            <div class="current-estado" id="currentEstadoBox">
+                <span class="flag">🇻🇪</span>
+                <div style="flex:1;">
+                    <div style="font-size:11px;color:#666;text-transform:uppercase;">Estado actual</div>
+                    <div style="font-weight:700;font-size:15px;" id="currentEstadoName">Sin asignar</div>
+                    <div style="font-size:12px;color:#888;" id="currentCiudadName">—</div>
+                </div>
+            </div>
+            
+            <input type="text" class="search-estado" id="searchEstado" placeholder="🔍 Buscar estado...">
+            <div class="estado-selector" id="estadoSelector">
+                <div style="grid-column:1/-1;text-align:center;padding:20px;color:#999;">
+                    Cargando estados...
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado de trabajo -->
+        <div class="card">
+            <h3>📊 Tu disponibilidad</h3>
+            <div class="status-selector">
+                <button class="status-option" data-status="disponible">
+                    <span class="icon">🟢</span>
+                    <span class="label">Disponible</span>
+                </button>
+                <button class="status-option" data-status="en_viaje">
+                    <span class="icon">🟡</span>
+                    <span class="label">En Viaje</span>
+                </button>
+                <button class="status-option" data-status="descanso">
+                    <span class="icon">🔴</span>
+                    <span class="label">Descanso</span>
+                </button>
+                <button class="status-option active" data-status="desconectado">
+                    <span class="icon">⚫</span>
+                    <span class="label">Desconectado</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- GPS -->
+        <div class="card">
+            <div class="gps-status inactive" id="gpsStatus">
+                <span class="gps-dot"></span>
+                <span id="gpsStatusText">GPS inactivo</span>
+            </div>
+            <button class="btn btn-primary" id="btnStartGPS">📍 Activar GPS</button>
+        </div>
+
+        <!-- Coordenadas -->
+        <div class="card" id="coordsCard" style="display:none;">
+            <h3>📡 Coordenadas</h3>
+            <div class="coords">
+                <div class="coord-box"><div class="coord-label">Latitud</div><div class="coord-value" id="lat">—</div></div>
+                <div class="coord-box"><div class="coord-label">Longitud</div><div class="coord-value" id="lng">—</div></div>
+                <div class="coord-box"><div class="coord-label">Precisión</div><div class="coord-value" id="accuracy">—</div></div>
+                <div class="coord-box"><div class="coord-label">Velocidad</div><div class="coord-value" id="speed">—</div></div>
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="card">
+            <h3>⚙️ Sesión</h3>
+            <div class="info-row"><span>Envíos exitosos</span><strong id="envios">0</strong></div>
+            <div class="info-row"><span>Última actualización</span><strong id="ultima">—</strong></div>
+        </div>
+
+        <button class="btn btn-danger" id="btnLogout">Cerrar Sesión</button>
+    </div>
+
+    <script>
+        let watchId = null;
+        let envios = 0;
+        let lastSent = 0;
+        const SEND_INTERVAL = 5000;
+        let currentStatus = 'desconectado';
+        let currentEstadoVE = null;
+        let estadosList = [];
+        let lastPosition = null;
+
+        // ============================================
+        // CARGAR ESTADOS DE VENEZUELA
+        // ============================================
+        async function cargarEstados() {
+            try {
+                const res = await fetch('/api/estados');
+                const data = await res.json();
+                
+                if (!data.success) throw new Error();
+                
+                estadosList = data.estados || [];
+                renderizarEstados(estadosList);
+            } catch (e) {
+                document.getElementById('estadoSelector').innerHTML = 
+                    '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#e53935;">Error cargando estados</div>';
+            }
+        }
+
+        function renderizarEstados(lista) {
+            const selector = document.getElementById('estadoSelector');
+            
+            if (!lista.length) {
+                selector.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#999;">Sin resultados</div>';
+                return;
+            }
+            
+            selector.innerHTML = lista.map(e => `
+                <button class="estado-option ${currentEstadoVE === e.codigo ? 'active' : ''}" data-codigo="${e.codigo}" data-nombre="${e.nombre}" data-capital="${e.capital || ''}">
+                    <span class="estado-codigo">${e.codigo}</span>
+                    <span class="estado-nombre">${e.nombre}</span>
+                </button>
+            `).join('');
+            
+            // Click handlers
+            selector.querySelectorAll('.estado-option').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    seleccionarEstado(btn.dataset.codigo, btn.dataset.nombre, btn.dataset.capital);
+                });
+            });
+        }
+
+        async function seleccionarEstado(codigo, nombre, capital) {
+            currentEstadoVE = codigo;
+            
+            // Marcar como activo visualmente
+            document.querySelectorAll('.estado-option').forEach(b => {
+                b.classList.toggle('active', b.dataset.codigo === codigo);
+            });
+            
+            // Actualizar UI
+            document.getElementById('currentEstadoName').textContent = nombre;
+            document.getElementById('currentCiudadName').textContent = capital || '';
+            
+            // Enviar al servidor
+            try {
+                const res = await fetch('/api/conductor/actualizar-estado-venezuela', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        estado: codigo,
+                        ciudad: capital
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`📍 ${nombre} seleccionado`);
+                }
+            } catch (e) {
+                showToast('❌ Error guardando estado');
+            }
+        }
+
+        // Buscador
+        document.getElementById('searchEstado').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase().trim();
+            const filtrados = q 
+                ? estadosList.filter(es => 
+                    es.nombre.toLowerCase().includes(q) || 
+                    es.codigo.toLowerCase().includes(q))
+                : estadosList;
+            renderizarEstados(filtrados);
+        });
+
+        // ============================================
+        // ESTADO DE DISPONIBILIDAD
+        // ============================================
+        document.querySelectorAll('.status-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                cambiarEstado(btn.dataset.status);
+            });
+        });
+
+        async function cambiarEstado(newStatus) {
+            currentStatus = newStatus;
+            document.querySelectorAll('.status-option').forEach(b => {
+                b.classList.toggle('active', b.dataset.status === newStatus);
+            });
+            
+            if (lastPosition) {
+                enviarUbicacion(lastPosition, true);
+            }
+            showToast(`Estado: ${newStatus}`);
+        }
+
+        // ============================================
+        // GPS
+        // ============================================
+        function updateGpsStatus(status, text) {
+            const el = document.getElementById('gpsStatus');
+            el.className = 'gps-status ' + status;
+            document.getElementById('gpsStatusText').textContent = text;
+        }
+
+        async function enviarUbicacion(pos, force = false) {
+            const ahora = Date.now();
+            if (!force && ahora - lastSent < SEND_INTERVAL) return;
+            lastSent = ahora;
+            lastPosition = pos;
+
+            try {
+                const res = await fetch('/api/conductor/actualizar-ubicacion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        latitud: pos.coords.latitude,
+                        longitud: pos.coords.longitude,
+                        velocidad: pos.coords.speed ? pos.coords.speed * 3.6 : 0,
+                        bateria: 100,
+                        estado: currentStatus,
+                        estado_venezuela: currentEstadoVE
+                    })
+                });
+                
+                if (res.ok) {
+                    envios++;
+                    document.getElementById('envios').textContent = envios;
+                    document.getElementById('ultima').textContent = new Date().toLocaleTimeString();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function iniciarGPS() {
+            if (!navigator.geolocation) {
+                alert('GPS no soportado');
+                return;
+            }
+            
+            updateGpsStatus('searching', '🔍 Buscando GPS...');
+            
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    updateGpsStatus('active', '🟢 GPS activo');
+                    document.getElementById('coordsCard').style.display = 'block';
+                    document.getElementById('lat').textContent = pos.coords.latitude.toFixed(6);
+                    document.getElementById('lng').textContent = pos.coords.longitude.toFixed(6);
+                    document.getElementById('accuracy').textContent = Math.round(pos.coords.accuracy) + 'm';
+                    document.getElementById('speed').textContent = pos.coords.speed ? Math.round(pos.coords.speed * 3.6) + ' km/h' : '—';
+                    enviarUbicacion(pos);
+                },
+                (err) => updateGpsStatus('error', '❌ ' + err.message),
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+            );
+            
+            document.getElementById('btnStartGPS').textContent = '⏹️ Detener GPS';
+            document.getElementById('btnStartGPS').className = 'btn btn-danger';
+            
+            if (currentStatus === 'desconectado') cambiarEstado('disponible');
+        }
+
+        function detenerGPS() {
+            if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+            updateGpsStatus('inactive', 'GPS inactivo');
+            document.getElementById('coordsCard').style.display = 'none';
+            document.getElementById('btnStartGPS').textContent = '📍 Activar GPS';
+            document.getElementById('btnStartGPS').className = 'btn btn-primary';
+            cambiarEstado('desconectado');
+        }
+
+        document.getElementById('btnStartGPS').addEventListener('click', () => {
+            watchId === null ? iniciarGPS() : detenerGPS();
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', async () => {
+            if (!confirm('¿Cerrar sesión?')) return;
+            if (watchId !== null) detenerGPS();
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/';
+        });
+
+        // ============================================
+        // UTILS
+        // ============================================
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.textContent = msg;
+            t.style.cssText = `
+                position: fixed; top: 20px; right: 20px;
+                background: #111; color: #fff; padding: 12px 20px;
+                border-radius: 10px; font-size: 14px; font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 9999;
+            `;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2500);
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarEstados();
+            
+            fetch('/api/me').then(r => r.json()).then(data => {
+                if (data.success) {
+                    document.getElementById('driverName').textContent = data.user.nombre_completo;
+                    if (data.user.estado_operacion) {
+                        currentEstadoVE = data.user.estado_operacion;
+                        document.getElementById('currentEstadoName').textContent = data.user.estado_operacion;
+                        document.getElementById('currentCiudadName').textContent = data.user.ciudad_operacion || '';
+                    }
+                }
+            }).catch(() => {});
+        });
+    </script>
+</body>
+</html>

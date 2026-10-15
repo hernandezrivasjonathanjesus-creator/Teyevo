@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teyevo - Dashboard Administrativo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary: #1e88e5; --primary-dark: #1565c0;
+            --red: #e53935; --green: #22c55e; --orange: #f59e0b; --purple: #8b5cf6;
+            --gray-50: #f8f9fb; --gray-100: #f0f2f5; --gray-200: #e5e7eb;
+            --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-500: #6b7280;
+            --gray-600: #4b5563; --gray-800: #1f2937; --gray-900: #111827;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.12);
+            --sidebar-width: 260px;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--gray-50); color: var(--gray-900); overflow-x: hidden; }
+        .app-container { display: flex; min-height: 100vh; }
+
+        /* SIDEBAR */
+        .sidebar { width: var(--sidebar-width); background: #fff; border-right: 1px solid var(--gray-200); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; transition: transform 0.3s; }
+        .sidebar-header { padding: 24px 20px; border-bottom: 1px solid var(--gray-200); text-align: center; }
+        .logo-text { font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+        .logo-red { color: var(--red); } .logo-blue { color: var(--primary); }
+        .logo-sub { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--gray-400); margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; color: var(--gray-600); text-decoration: none; font-weight: 500; font-size: 14px; margin-bottom: 4px; transition: all 0.2s; cursor: pointer; }
+        .nav-item:hover { background: var(--gray-100); color: var(--gray-900); }
+        .nav-item.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; box-shadow: 0 4px 12px rgba(30,136,229,0.3); }
+        .nav-icon { font-size: 18px; }
+        .nav-badge { margin-left: auto; background: var(--gray-200); color: var(--gray-600); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+        .nav-item.active .nav-badge { background: rgba(255,255,255,0.25); color: #fff; }
+        .nav-badge.alert { background: var(--red); color: #fff; }
+        .nav-badge.online { background: var(--green); color: #fff; }
+
+        .sidebar-footer { padding: 16px; border-top: 1px solid var(--gray-200); display: flex; align-items: center; gap: 10px; }
+        .user-mini { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--purple)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+        .user-mini-info { min-width: 0; }
+        .user-mini-name { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-mini-role { font-size: 11px; color: var(--gray-400); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn-logout { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--gray-200); background: #fff; cursor: pointer; font-size: 16px; color: var(--gray-600); transition: all 0.2s; }
+        .btn-logout:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+        /* MAIN */
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 0 32px 32px; max-width: calc(100vw - var(--sidebar-width)); }
+
+        /* TOPBAR */
+        .topbar { display: flex; align-items: center; gap: 16px; padding: 20px 0; position: sticky; top: 0; background: var(--gray-50); z-index: 50; }
+        .menu-toggle { display: none; background: #fff; border: 1px solid var(--gray-200); width: 40px; height: 40px; border-radius: 8px; font-size: 18px; cursor: pointer; }
+        .topbar-search { position: relative; flex: 1; max-width: 500px; }
+        .topbar-search input { width: 100%; padding: 11px 16px 11px 42px; border: 1.5px solid var(--gray-200); border-radius: 12px; font-family: inherit; font-size: 14px; background: #fff; outline: none; transition: border-color 0.2s; }
+        .topbar-search input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,136,229,0.12); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); opacity: 0.5; pointer-events: none; }
+        .topbar-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+        .exchange-rate { display: flex; flex-direction: column; align-items: flex-end; padding: 6px 14px; background: #fff; border: 1px solid var(--gray-200); border-radius: 10px; font-size: 12px; }
+        .rate-label { color: var(--gray-400); font-weight: 500; }
+        .rate-value { font-weight: 700; color: var(--green); font-size: 14px; }
+        .icon-btn { position: relative; width: 42px; height: 42px; border-radius: 10px; border: 1px solid var(--gray-200); background: #fff; cursor: pointer; font-size: 18px; transition: all 0.2s; }
+        .icon-btn:hover { background: var(--gray-100); transform: translateY(-1px); }
+        .notif-badge { position: absolute; top: -4px; right: -4px; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; border: 2px solid var(--gray-50); }
+
+        /* SECTIONS */
+        .section { display: none; animation: fadeIn 0.3s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .section-header { margin-bottom: 24px; }
+        .section-header h2 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+        .section-desc { color: var(--gray-500); font-size: 14px; }
+
+        /* KPI */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .kpi-card { background: #fff; padding: 22px; border-radius: 16px; display: flex; gap: 16px; align-items: center; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); transition: transform 0.2s, box-shadow 0.2s; }
+        .kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .kpi-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+        .kpi-icon.blue { background: #e3f2fd; }
+        .kpi-icon.green { background: #dcfce7; }
+        .kpi-icon.orange { background: #fef3c7; }
+        .kpi-icon.purple { background: #f3e8ff; }
+        .kpi-info { flex: 1; min-width: 0; }
+        .kpi-label { font-size: 12px; color: var(--gray-500); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .kpi-value { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+        .kpi-trend { font-size: 12px; font-weight: 600; }
+        .kpi-trend.up { color: var(--green); }
+        .kpi-trend.down { color: var(--red); }
+
+        /* CHARTS */
+        .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+        .chart-card, .activity-card { background: #fff; padding: 24px; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-header h3 { font-size: 16px; font-weight: 700; }
+        .mini-select { padding: 6px 10px; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 13px; font-family: inherit; cursor: pointer; }
+        .chart-container { height: 280px; position: relative; }
+
+        /* ACTIVITY */
+        .activity-list { display: flex; flex-direction: column; gap: 12px; }
+        .activity-item { display: flex; gap: 12px; padding: 12px; border-radius: 10px; transition: background 0.2s; }
+        .activity-item:hover { background: var(--gray-50); }
+        .activity-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--gray-100); }
+        .activity-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+        .activity-time { font-size: 12px; color: var(--gray-400); }
+
+        .loading-skeleton { height: 60px; border-radius: 10px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* TOOLBAR */
+        .toolbar { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .toolbar-left, .toolbar-right { display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-input, .filter-select { padding: 10px 14px; border: 1.5px solid var(--gray-200); border-radius: 10px; font-family: inherit; font-size: 14px; background: #fff; outline: none; transition: border-color 0.2s; }
+        .search-input { min-width: 280px; }
+        .search-input:focus, .filter-select:focus { border-color: var(--primary); }
+        .btn-primary { padding: 10px 18px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; border: none; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(30,136,229,0.25); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(30,136,229,0.35); }
+
+        /* TABLES */
+        .table-container { background: #fff; border-radius: 16px; border: 1px solid var(--gray-200); overflow: hidden; box-shadow: var(--shadow-sm); }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .data-table thead { background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
+        .data-table th { text-align: left; padding: 14px 20px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-500); }
+        .data-table td { padding: 14px 20px; border-bottom: 1px solid var(--gray-100); }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover { background: var(--gray-50); }
+        .table-loading, .table-empty { text-align: center; padding: 40px; color: var(--gray-400); }
+
+        .user-cell { display: flex; align-items: center; gap: 12px; }
+        .user-cell .avatar { width: 34px; height: 34px; font-size: 13px; }
+        .user-cell .user-name { font-weight: 600; }
+
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge.success { background: #dcfce7; color: #166534; }
+        .badge.warning { background: #fef3c7; color: #92400e; }
+        .badge.danger { background: #fee2e2; color: #991b1b; }
+        .badge.info { background: #dbeafe; color: #1e40af; }
+
+        .btn-icon { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--gray-200); background: #fff; cursor: pointer; font-size: 14px; transition: all 0.2s; margin-right: 4px; }
+        .btn-icon:hover { background: var(--gray-100); }
+        .btn-icon.danger:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+        /* DRIVERS */
+        .drivers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+        .driver-card { background: #fff; border-radius: 16px; padding: 20px; border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s; }
+        .driver-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .driver-header { display: flex; gap: 14px; margin-bottom: 16px; }
+        .driver-header .avatar { width: 56px; height: 56px; font-size: 20px; }
+        .driver-info h4 { font-size: 16px; margin-bottom: 2px; }
+        .driver-info p { font-size: 13px; color: var(--gray-500); }
+        .driver-actions { display: flex; gap: 8px; }
+        .btn-approve, .btn-reject { flex: 1; padding: 10px; border-radius: 10px; border: none; font-family: inherit; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .btn-approve { background: var(--green); color: #fff; }
+        .btn-approve:hover { background: #16a34a; }
+        .btn-reject { background: #fee2e2; color: #991b1b; }
+        .btn-reject:hover { background: var(--red); color: #fff; }
+
+        /* VEHICLES */
+        .vehicles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
+        .vehicle-card { background: #fff; border-radius: 16px; padding: 20px; border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s; }
+        .vehicle-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .vehicle-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+        .vehicle-photo { aspect-ratio: 1; background: var(--gray-100); border-radius: 10px; overflow: hidden; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; font-size: 36px; color: var(--gray-400); transition: transform 0.2s; }
+        .vehicle-photo:hover { transform: scale(1.02); }
+        .vehicle-photo img { width: 100%; height: 100%; object-fit: cover; }
+        .vehicle-photo::after { content: '🔍'; position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 13px; opacity: 0; transition: opacity 0.2s; }
+        .vehicle-photo:hover::after { opacity: 1; }
+        .vehicle-info h4 { font-size: 16px; margin-bottom: 8px; }
+        .vehicle-info p { font-size: 13px; color: var(--gray-600); margin-bottom: 4px; }
+        .vehicle-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+        /* PHOTO VIEWER */
+        .photo-viewer { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 40px; }
+        .photo-viewer.show { display: flex; }
+        .photo-viewer img { max-width: 90%; max-height: 90vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .photo-viewer-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 44px; background: none; border: none; cursor: pointer; line-height: 1; }
+
+        /* MAPA */
+        #liveMap { width: 100%; height: 600px; border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--gray-200); }
+        .map-driver-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 20px; }
+        .map-driver-card { background: #fff; padding: 14px; border-radius: 12px; border: 1px solid var(--gray-200); display: flex; gap: 12px; align-items: center; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-sm); }
+        .map-driver-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .status-dot { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+
+        /* DISPONIBILIDAD POR ESTADO */
+        .estado-card { background: #fff; border-radius: 16px; padding: 20px; border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s; }
+        .estado-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .estado-card.con-conductores { border-left: 4px solid var(--green); }
+        .estado-card.sin-conductores { border-left: 4px solid var(--gray-200); opacity: 0.65; }
+        .estado-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+        .estado-codigo { background: var(--primary); color: #fff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; }
+        .estado-nombre { font-size: 16px; font-weight: 700; }
+        .estado-capital { font-size: 11px; color: var(--gray-500); }
+        .estado-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .estado-stat { padding: 10px; border-radius: 8px; text-align: center; }
+        .estado-stat.disponibles { background: #dcfce7; }
+        .estado-stat.disponibles .num { color: #166534; }
+        .estado-stat.en-viaje { background: #fef3c7; }
+        .estado-stat.en-viaje .num { color: #92400e; }
+        .estado-stat .num { font-size: 22px; font-weight: 700; }
+        .estado-stat .lbl { font-size: 10px; text-transform: uppercase; color: #666; }
+
+        .conductor-mini { display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--gray-50); border-radius: 8px; margin-bottom: 6px; font-size: 12px; cursor: pointer; transition: background 0.2s; }
+        .conductor-mini:hover { background: #e3f2fd; }
+        .conductor-mini .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .conductor-mini .nombre { font-weight: 600; flex: 1; }
+        .conductor-mini .vehiculo { color: #666; font-size: 11px; }
+
+        /* MODAL RUTA */
+        .route-info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 16px; background: var(--gray-50); border-radius: 12px; margin-bottom: 16px; }
+        .route-info-item .label { font-size: 11px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; }
+        .route-info-item .value { font-weight: 700; margin-top: 4px; font-size: 14px; }
+        .route-info-item .sub { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+
+        #tripRouteMap { width: 100%; height: 500px; border-radius: 12px; background: var(--gray-100); }
+
+        /* TABS */
+        .tabs { display: flex; gap: 4px; background: var(--gray-100); padding: 4px; border-radius: 12px; margin-bottom: 20px; width: fit-content; }
+        .tab { padding: 8px 20px; border: none; background: transparent; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 14px; color: var(--gray-500); cursor: pointer; transition: all 0.2s; }
+        .tab.active { background: #fff; color: var(--primary); box-shadow: var(--shadow-sm); }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(4px); }
+        .modal.show { display: flex; animation: fadeIn 0.2s; }
+        .modal-content { background: #fff; border-radius: 20px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; animation: zoomIn 0.25s; }
+        .modal-content.modal-large { max-width: 900px; }
+        @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 20px; }
+        .modal-close { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--gray-400); line-height: 1; }
+        .modal-close:hover { color: var(--red); }
+        .modal-body { padding: 24px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--gray-700); }
+        .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1.5px solid var(--gray-200); border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,136,229,0.1); }
+
+        /* TICKETS */
+        .tickets-list { display: flex; flex-direction: column; gap: 12px; }
+        .ticket-item { background: #fff; padding: 20px; border-radius: 14px; border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+        .ticket-info h4 { font-size: 15px; margin-bottom: 4px; }
+        .ticket-info p { font-size: 13px; color: var(--gray-500); }
+
+        /* EMPTY */
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--gray-400); }
+        .empty-icon { font-size: 64px; margin-bottom: 16px; }
+        .empty-state h3 { color: var(--gray-500); margin-bottom: 8px; }
+
+        /* TOASTS */
+        .toast-container { position: fixed; top: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: #fff; padding: 14px 20px; border-radius: 12px; box-shadow: var(--shadow-lg); border-left: 4px solid var(--primary); min-width: 280px; animation: slideIn 0.3s; font-size: 14px; font-weight: 500; }
+        .toast.success { border-color: var(--green); }
+        .toast.error { border-color: var(--red); }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) { .charts-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+            .main-content { margin-left: 0; max-width: 100%; padding: 0 16px 16px; }
+            .menu-toggle { display: block; }
+            .exchange-rate { display: none; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .data-table { font-size: 12px; }
+            .data-table th, .data-table td { padding: 10px 12px; }
+            .search-input { min-width: auto; flex: 1; }
+            #liveMap { height: 400px; }
+            #tripRouteMap { height: 300px; }
+            .route-info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo-text">
+                <span class="logo-red">Tey</span><span class="logo-blue">evo</span>
+            </h1>
+            <p class="logo-sub">Admin Panel</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-section="overview">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Panel General</span>
+            </a>
+            <a href="#" class="nav-item" data-section="disponibilidad">
+                <span class="nav-icon">📍</span>
+                <span class="nav-label">Disponibilidad</span>
+                <span class="nav-badge online" id="badgeDisponibles">0</span>
+            </a>
+            <a href="#" class="nav-item" data-section="users">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Usuarios</span>
+                <span class="nav-badge" id="badgeUsers">0</span>
+            </a>
+            <a href="#" class="nav-item" data-section="drivers">
+                <span class="nav-icon">🚗</span>
+                <span class="nav-label">Conductores</span>
+                <span class="nav-badge" id="badgeDrivers">0</span>
+            </a>
+            <a href="#" class="nav-item" data-section="vehicles">
+                <span class="nav-icon">🚙</span>
+                <span class="nav-label">Vehículos</span>
+                <span class="nav-badge" id="badgeVehicles">0</span>
+            </a>
+            <a href="#" class="nav-item" data-section="livemap">
+                <span class="nav-icon">🗺️</span>
+                <span class="nav-label">Mapa en Vivo</span>
+                <span class="nav-badge online" id="badgeOnline">0</span>
+            </a>
+            <a href="#" class="nav-item" data-section="tariffs">
+                <span class="nav-icon">💰</span>
+                <span class="nav-label">Tarifas</span>
+            </a>
+            <a href="#" class="nav-item" data-section="trips">
+                <span class="nav-icon">🛣️</span>
+                <span class="nav-label">Viajes</span>
+            </a>
+            <a href="#" class="nav-item" data-section="payments">
+                <span class="nav-icon">💳</span>
+                <span class="nav-label">Pagos</span>
+            </a>
+            <a href="#" class="nav-item" data-section="tickets">
+                <span class="nav-icon">🎫</span>
+                <span class="nav-label">Soporte</span>
+                <span class="nav-badge alert" id="badgeTickets">0</span>
+            </a>
+            <a href="#" class="nav-item" data-section="reports">
+                <span class="nav-icon">📈</span>
+                <span class="nav-label">Reportes</span>
+            </a>
+            <a href="#" class="nav-item" data-section="settings">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-mini">
+                <div class="avatar" id="adminAvatar">A</div>
+                <div class="user-mini-info">
+                    <p class="user-mini-name" id="adminName">Admin</p>
+                    <p class="user-mini-role" id="adminEmail">admin@teyevo.com</p>
+                </div>
+            </div>
+            <button class="btn-logout" id="btnLogout" title="Cerrar sesión">⏻</button>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+        <header class="topbar">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <div class="topbar-search">
+                <input type="text" placeholder="Buscar usuario, conductor, vehículo..." id="globalSearch">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="topbar-actions">
+                <div class="exchange-rate">
+                    <span class="rate-label">💱 Tasa BCV</span>
+                    <span class="rate-value" id="exchangeRate">Bs. 0.00</span>
+                </div>
+                <button class="icon-btn" id="btnNotifications">
+                    🔔
+                    <span class="notif-badge" id="notifBadge">3</span>
+                </button>
+                <button class="icon-btn" id="btnRefresh" title="Actualizar">🔄</button>
+            </div>
+        </header>
+
+        <!-- OVERVIEW -->
+        <section class="section active" id="section-overview">
+            <div class="section-header">
+                <h2>Panel General</h2>
+                <p class="section-desc">Resumen de la actividad de Teyevo en tiempo real</p>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon blue">👥</div>
+                    <div class="kpi-info">
+                        <p class="kpi-label">Usuarios Totales</p>
+                        <h3 class="kpi-value" id="kpiUsers">—</h3>
+                        <span class="kpi-trend up" id="kpiUsersTrend">+0%</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon green">🚗</div>
+                    <div class="kpi-info">
+                        <p class="kpi-label">Conductores Activos</p>
+                        <h3 class="kpi-value" id="kpiDrivers">—</h3>
+                        <span class="kpi-trend up" id="kpiDriversTrend">+0%</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon orange">🛣️</div>
+                    <div class="kpi-info">
+                        <p class="kpi-label">Viajes Hoy</p>
+                        <h3 class="kpi-value" id="kpiTrips">—</h3>
+                        <span class="kpi-trend up" id="kpiTripsTrend">+0%</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon purple">💰</div>
+                    <div class="kpi-info">
+                        <p class="kpi-label">Ingresos Hoy</p>
+                        <h3 class="kpi-value" id="kpiRevenue">—</h3>
+                        <span class="kpi-trend up" id="kpiRevenueTrend">+0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="card-header"><h3>Viajes últimos 7 días</h3></div>
+                    <div class="chart-container"><canvas id="tripsChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="card-header"><h3>Distribución de servicios</h3></div>
+                    <div class="chart-container"><canvas id="servicesChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="activity-card">
+                <div class="card-header">
+                    <h3>Actividad Reciente</h3>
+                </div>
+                <div class="activity-list" id="activityList">
+                    <div class="loading-skeleton"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DISPONIBILIDAD POR ESTADO -->
+        <section class="section" id="section-disponibilidad">
+            <div class="section-header">
+                <h2>📍 Disponibilidad por Estado</h2>
+                <p class="section-desc">Cuántos conductores y vehículos hay disponibles en cada estado de Venezuela</p>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon green">🟢</div>
+                    <div class="kpi-info">
+                        <p class="kpi-label">Disponibles Ahora</p>
+                        <h3 class="kpi-value" id="totalDisponibles">—</h3>
+                        <span style="font-size: 12px; color: #666;">en todo el país</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon orange">🟡</div>
+                    <div class="kpi-info">
+                        <p class="kpi-label">En Viaje</p>
+                        <h3 class="kpi-value" id="totalEnViaje">—</h3>
+                        <span style="font-size: 12px; color: #666;">ocupados</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon blue">👥</div>
+                    <div class="kpi-info">
+                        <p class="kpi-label">Total Registrados</p>
+                        <h3 class="kpi-value" id="totalConductores">—</h3>
+                        <span style="font-size: 12px; color: #666;">en el sistema</span>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon purple">🇻🇪</div>
+                    <div class="kpi-info">
+                        <p class="kpi-label">Estados Activos</p>
+                        <h3 class="kpi-value" id="totalEstados">—</h3>
+                        <span style="font-size: 12px; color: #666;">con conductores</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <input type="text" class="search-input" id="searchDisponibilidad" placeholder="🔍 Buscar estado...">
+                    <select class="filter-select" id="filterSoloConConductores" onchange="renderizarDisponibilidad()">
+                        <option value="todos">Todos los estados</option>
+                        <option value="con">Solo con conductores</option>
+                        <option value="sin">Solo sin conductores</option>
+                    </select>
+                </div>
+                <div class="toolbar-right">
+                    <button class="btn-primary" onclick="cargarDisponibilidad()">🔄 Actualizar</button>
+                </div>
+            </div>
+
+            <div id="gridEstados" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+                <div class="loading-skeleton" style="height: 200px;"></div>
+                <div class="loading-skeleton" style="height: 200px;"></div>
+                <div class="loading-skeleton" style="height: 200px;"></div>
+            </div>
+        </section>
+
+        <!-- USUARIOS -->
+        <section class="section" id="section-users">
+            <div class="section-header">
+                <h2>Gestión de Usuarios</h2>
+                <p class="section-desc">Administra todos los usuarios registrados en Teyevo</p>
+            </div>
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <input type="text" class="search-input" id="searchUsers" placeholder="Buscar por nombre, email o cédula...">
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th><th>Email</th><th>Cédula</th><th>Teléfono</th>
+                            <th>Rol</th><th>Estado</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr><td colspan="7" class="table-loading">Cargando usuarios...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- CONDUCTORES -->
+        <section class="section" id="section-drivers">
+            <div class="section-header">
+                <h2>Gestión de Conductores</h2>
+                <p class="section-desc">Verifica documentos y aprueba nuevos conductores</p>
+            </div>
+            <div class="tabs">
+                <button class="tab active" data-tab="pending">Pendientes</button>
+                <button class="tab" data-tab="approved">Aprobados</button>
+                <button class="tab" data-tab="rejected">Rechazados</button>
+            </div>
+            <div class="drivers-grid" id="driversGrid">
+                <div class="loading-skeleton"></div>
+            </div>
+        </section>
+
+        <!-- VEHÍCULOS -->
+        <section class="section" id="section-vehicles">
+            <div class="section-header">
+                <h2>Vehículos Registrados</h2>
+                <p class="section-desc">Revisa fotos y aprueba los vehículos</p>
+            </div>
+            <div class="vehicles-grid" id="vehiclesGrid">
+                <div class="loading-skeleton"></div>
+            </div>
+        </section>
+
+        <!-- MAPA EN VIVO -->
+        <section class="section" id="section-livemap">
+            <div class="section-header">
+                <h2>🗺️ Mapa en Vivo</h2>
+                <p class="section-desc">Ubicación GPS de los conductores en tiempo real</p>
+            </div>
+
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <button class="btn-primary" onclick="centrarMapa()">📍 Centrar todos</button>
+                    <select class="filter-select" id="filterMapStatus" onchange="renderizarMapa()">
+                        <option value="">Estado de trabajo (todos)</option>
+                        <option value="disponible">🟢 Disponible</option>
+                        <option value="en_viaje">🟡 En viaje</option>
+                        <option value="descanso">🔴 Descanso</option>
+                        <option value="desconectado">⚫ Desconectado</option>
+                    </select>
+                    <select class="filter-select" id="filterEstadoVE" onchange="renderizarMapa()">
+                        <option value="">🇻🇪 Estados de Venezuela (todos)</option>
+                    </select>
+                </div>
+                <div class="toolbar-right">
+                    <span class="badge success" id="onlineCount">0 online</span>
+                    <button class="btn-primary" onclick="cargarMapa()">🔄 Actualizar</button>
+                </div>
+            </div>
+
+            <div id="liveMap"></div>
+            <div class="map-driver-list" id="mapDriverList"></div>
+        </section>
+
+        <!-- TARIFAS -->
+        <section class="section" id="section-tariffs">
+            <div class="section-header">
+                <h2>Gestión de Tarifas</h2>
+                <p class="section-desc">Configura precios por tipo de servicio</p>
+            </div>
+            <div class="toolbar">
+                <div class="toolbar-right">
+                    <button class="btn-primary" onclick="abrirModalTarifa()">➕ Nueva Tarifa</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Servicio</th><th>Zona</th><th>Precio Base</th>
+                            <th>Por KM</th><th>Mínima</th><th>Estado</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tariffsTableBody">
+                        <tr><td colspan="7" class="table-loading">Cargando tarifas...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- VIAJES -->
+        <section class="section" id="section-trips">
+            <div class="section-header">
+                <h2>🛣️ Historial de Viajes</h2>
+                <p class="section-desc">Consulta los viajes y las rutas que siguieron los conductores</p>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Pasajero</th><th>Conductor</th>
+                            <th>Origen → Destino</th><th>Tarifa</th><th>Estado</th><th>Fecha</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tripsTableBody">
+                        <tr><td colspan="8" class="table-loading">Cargando viajes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SOPORTE -->
+        <section class="section" id="section-tickets">
+            <div class="section-header">
+                <h2>Soporte al Cliente</h2>
+            </div>
+            <div class="tickets-list" id="ticketsList">
+                <div class="loading-skeleton"></div>
+            </div>
+        </section>
+
+        <section class="section" id="section-payments">
+            <div class="section-header"><h2>Pagos y Facturación</h2></div>
+            <div class="empty-state">
+                <div class="empty-icon">💳</div>
+                <h3>Módulo de Pagos</h3>
+                <p>Próximamente disponible</p>
+            </div>
+        </section>
+
+        <section class="section" id="section-reports">
+            <div class="section-header"><h2>Reportes y Estadísticas</h2></div>
+            <div class="empty-state">
+                <div class="empty-icon">📈</div>
+                <h3>Módulo de Reportes</h3>
+                <p>Próximamente disponible</p>
+            </div>
+        </section>
+
+        <section class="section" id="section-settings">
+            <div class="section-header"><h2>Configuración</h2></div>
+            <div class="empty-state">
+                <div class="empty-icon">⚙️</div>
+                <h3>Configuración General</h3>
+                <p>Próximamente disponible</p>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- Modal Usuario -->
+<div class="modal" id="userModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Detalles del Usuario</h2>
+            <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="userModalBody"></div>
+    </div>
+</div>
+
+<!-- Modal Ruta del Viaje -->
+<div class="modal" id="tripRouteModal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h2 id="tripRouteTitle">🗺️ Ruta del Viaje</h2>
+            <button class="modal-close" onclick="closeModal('tripRouteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="tripInfo"></div>
+            <div id="tripRouteMap"></div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ============================================
+   CONFIG
+   ============================================ */
+const API_BASE = '';
+let currentSection = 'overview';
+let tripsChart = null;
+let servicesChart = null;
+
+let leafletMap = null;
+let driverMarkers = [];
+let mapDriversData = [];
+let estadosVenezuela = [];
+let disponibilidadData = [];
+
+/* Variables del mapa de ruta */
+let tripRouteMap = null;
+
+/* ============================================
+   UTILIDADES
+   ============================================ */
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+function showToast(msg, type = 'info') {
+    const container = $('#toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+function openModal(id) {
+    document.getElementById(id).classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+function formatearMoneda(n) {
+    return new Intl.NumberFormat('es-VE', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2
+    }).format(n || 0);
+}
+
+function formatearFecha(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('es-VE', {
+        day: '2-digit', month: 'short', year: 'numeric'
+    });
+}
+
+function formatearHora(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleTimeString('es-VE', {
+        hour: '2-digit', minute: '2-digit'
+    });
+}
+
+function iniciales(nombre = '') {
+    return nombre.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+}
+
+function getBadgeClass(estado) {
+    return {
+        'Activo': 'success', 'Suspendido': 'warning', 'Bloqueado': 'danger',
+        'Pendiente': 'warning', 'Rechazado': 'danger', 'Completado': 'success',
+        'En curso': 'info', 'Cancelado': 'danger', 'Aprobado': 'success'
+    }[estado] || 'info';
+}
+
+function getRolNombre(id_rol) {
+    return { 1: '🔑 Admin', 4: '🚗 Conductor', 5: '👤 Pasajero' }[id_rol] || '—';
+}
+
+function getEstadoNombre(codigo) {
+    if (!codigo) return '';
+    const e = estadosVenezuela.find(x => x.codigo === codigo);
+    return e ? e.nombre : codigo;
+}
+
+/* ============================================
+   NAVEGACIÓN
+   ============================================ */
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.preventDefault();
+        cambiarSeccion(item.dataset.section);
+    });
+});
+
+function cambiarSeccion(name) {
+    currentSection = name;
+    $$('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.section === name));
+    $$('.section').forEach(s => s.classList.toggle('active', s.id === `section-${name}`));
+    $('#sidebar').classList.remove('open');
+
+    switch (name) {
+        case 'overview': cargarOverview(); break;
+        case 'disponibilidad': cargarDisponibilidad(); break;
+        case 'users': cargarUsuarios(); break;
+        case 'drivers': cargarConductores(); break;
+        case 'vehicles': cargarVehiculos(); break;
+        case 'livemap':
+            setTimeout(() => {
+                initMapa();
+                cargarMapa();
+            }, 100);
+            break;
+        case 'tariffs': cargarTarifas(); break;
+        case 'trips': cargarViajes(); break;
+        case 'tickets': cargarTickets(); break;
+    }
+}
+
+$('#menuToggle').addEventListener('click', () => {
+    $('#sidebar').classList.toggle('open');
+});
+
+/* ============================================
+   OVERVIEW
+   ============================================ */
+async function cargarOverview() {
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/stats`);
+        const data = await res.json();
+        if (data.success) {
+            $('#kpiUsers').textContent = (data.stats.total_usuarios || 0).toLocaleString();
+            $('#kpiDrivers').textContent = (data.stats.conductores_activos || 0).toLocaleString();
+            $('#kpiTrips').textContent = (data.stats.viajes_hoy || 0).toLocaleString();
+            $('#kpiRevenue').textContent = formatearMoneda(data.stats.ingresos_hoy);
+
+            ['usuarios', 'conductores', 'viajes', 'ingresos'].forEach(k => {
+                const el = $(`#kpi${k.charAt(0).toUpperCase() + k.slice(1)}Trend`);
+                if (el) {
+                    const val = data.stats[`trend_${k}`] || 0;
+                    el.textContent = `${val >= 0 ? '+' : ''}${val}%`;
+                    el.className = `kpi-trend ${val >= 0 ? 'up' : 'down'}`;
+                }
+            });
+
+            renderTripsChart(data.stats.viajes_semana || []);
+            renderServicesChart(data.stats.distribucion_servicios || []);
+            renderActividad(data.stats.actividad_reciente || []);
+        }
+    } catch (err) {
+        console.error('Error cargando overview:', err);
+    }
+}
+
+function renderTripsChart(datos) {
+    const ctx = document.getElementById('tripsChart');
+    if (!ctx) return;
+    if (tripsChart) tripsChart.destroy();
+    tripsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+            datasets: [{
+                label: 'Viajes', data: datos,
+                borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)',
+                borderWidth: 3, fill: true, tension: 0.4,
+                pointBackgroundColor: '#1e88e5', pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+function renderServicesChart(datos) {
+    const ctx = document.getElementById('servicesChart');
+    if (!ctx) return;
+    if (servicesChart) servicesChart.destroy();
+    servicesChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: datos.map(d => d.label),
+            datasets: [{
+                data: datos.map(d => d.value),
+                backgroundColor: ['#1e88e5', '#22c55e', '#f59e0b', '#8b5cf6'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '65%',
+            plugins: { legend: { position: 'bottom', labels: { padding: 16 } } }
+        }
+    });
+}
+
+function renderActividad(items) {
+    const container = $('#activityList');
+    if (!items.length) {
+        container.innerHTML = '<p class="table-empty">Sin actividad reciente</p>';
+        return;
+    }
+    container.innerHTML = items.map(a => `
+        <div class="activity-item">
+            <div class="activity-icon">${a.icon}</div>
+            <div>
+                <p class="activity-title">${a.title}</p>
+                <p class="activity-time">${a.time}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+/* ============================================
+   DISPONIBILIDAD POR ESTADO
+   ============================================ */
+async function cargarDisponibilidad() {
+    const grid = document.getElementById('gridEstados');
+    if (!grid) return;
+
+    grid.innerHTML = '<div class="loading-skeleton" style="height: 200px;"></div>';
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/disponibilidad-por-estado`);
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.message);
+
+        disponibilidadData = data.estados || [];
+
+        const r = data.resumen || {};
+        document.getElementById('totalDisponibles').textContent = r.total_disponibles || 0;
+        document.getElementById('totalEnViaje').textContent = r.total_en_viaje || 0;
+        document.getElementById('totalConductores').textContent = r.total_conductores || 0;
+        document.getElementById('totalEstados').textContent = r.estados_con_conductores || 0;
+
+        const badge = document.getElementById('badgeDisponibles');
+        if (badge) badge.textContent = r.total_disponibles || 0;
+
+        renderizarDisponibilidad();
+    } catch (err) {
+        console.error('Error cargando disponibilidad:', err);
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">❌</div><h3>Error cargando datos</h3></div>';
+    }
+}
+
+function renderizarDisponibilidad() {
+    const grid = document.getElementById('gridEstados');
+    if (!grid) return;
+
+    const busqueda = (document.getElementById('searchDisponibilidad')?.value || '').toLowerCase().trim();
+    const filtro = document.getElementById('filterSoloConConductores')?.value || 'todos';
+
+    let filtrados = disponibilidadData;
+
+    if (busqueda) {
+        filtrados = filtrados.filter(e =>
+            e.nombre.toLowerCase().includes(busqueda) ||
+            e.codigo.toLowerCase().includes(busqueda) ||
+            (e.capital || '').toLowerCase().includes(busqueda)
+        );
+    }
+
+    if (filtro === 'con') filtrados = filtrados.filter(e => e.total > 0);
+    else if (filtro === 'sin') filtrados = filtrados.filter(e => e.total === 0);
+
+    if (!filtrados.length) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🔍</div><h3>Sin resultados</h3></div>';
+        return;
+    }
+
+    grid.innerHTML = filtrados.map(est => {
+        const clase = est.total > 0 ? 'con-conductores' : 'sin-conductores';
+
+        const conductoresMostrar = (est.conductores || []).slice(0, 3);
+        const masConductores = est.conductores.length > 3
+            ? `<div style="text-align:center;font-size:11px;color:#1e88e5;padding:6px;cursor:pointer;font-weight:600;" onclick="verTodosConductores('${est.codigo}')">
+                Ver los ${est.conductores.length} conductores →
+               </div>`
+            : '';
+
+        const conductoresHTML = conductoresMostrar.map(c => {
+            const color = c.estado_trabajo === 'disponible' ? '#22c55e' :
+                          c.estado_trabajo === 'en_viaje' ? '#f59e0b' :
+                          c.estado_trabajo === 'descanso' ? '#ef4444' : '#9ca3af';
+
+            const vehiculoTexto = c.vehiculo
+                ? `${c.vehiculo.marca} ${c.vehiculo.modelo} • ${c.vehiculo.placa}`
+                : 'Sin vehículo';
+
+            return `
+                <div class="conductor-mini" onclick="irAConductorEnMapa(${c.id_conductor})">
+                    <span class="dot" style="background: ${color};"></span>
+                    <div style="flex:1;min-width:0;">
+                        <div class="nombre">${c.nombre}</div>
+                        <div class="vehiculo">${vehiculoTexto}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="estado-card ${clase}">
+                <div class="estado-header">
+                    <div>
+                        <div class="estado-nombre">${est.nombre}</div>
+                        <div class="estado-capital">${est.capital || ''}</div>
+                    </div>
+                    <span class="estado-codigo">${est.codigo}</span>
+                </div>
+
+                <div class="estado-stats">
+                    <div class="estado-stat disponibles">
+                        <div class="num">${est.disponibles}</div>
+                        <div class="lbl">🟢 Disponibles</div>
+                    </div>
+                    <div class="estado-stat en-viaje">
+                        <div class="num">${est.en_viaje}</div>
+                        <div class="lbl">🟡 En viaje</div>
+                    </div>
+                </div>
+
+                ${est.conductores.length ? conductoresHTML + masConductores
+                    : '<p style="text-align:center;color:#999;font-size:12px;padding:8px;">Sin conductores registrados</p>'}
+            </div>
+        `;
+    }).join('');
+}
+
+function verTodosConductores(codigoEstado) {
+    const est = disponibilidadData.find(e => e.codigo === codigoEstado);
+    if (!est) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.id = 'conductoresEstadoModal';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>👥 Conductores en ${est.nombre} (${est.total})</h2>
+                <button class="modal-close" onclick="document.getElementById('conductoresEstadoModal').remove()">×</button>
+            </div>
+            <div class="modal-body">
+                ${est.conductores.map(c => {
+                    const color = c.estado_trabajo === 'disponible' ? '#22c55e' :
+                                  c.estado_trabajo === 'en_viaje' ? '#f59e0b' :
+                                  c.estado_trabajo === 'descanso' ? '#ef4444' : '#9ca3af';
+                    const v = c.vehiculo;
+                    return `
+                        <div style="display:flex;gap:12px;padding:12px;background:#f8f9fb;border-radius:10px;margin-bottom:8px;border-left:4px solid ${color};">
+                            <div style="flex:1;">
+                                <div style="font-weight:700;">${c.nombre}</div>
+                                <div style="font-size:12px;color:#666;">📱 ${c.telefono || '—'}</div>
+                                ${v ? `
+                                    <div style="font-size:12px;color:#666;margin-top:4px;">
+                                        🚗 <strong>${v.marca} ${v.modelo}</strong> (${v.color || '—'})
+                                    </div>
+                                    <div style="font-size:12px;color:#666;">
+                                        🔤 Placa: <strong>${v.placa || '—'}</strong> • 🚕 ${v.tipo_servicio || '—'}
+                                    </div>
+                                ` : '<div style="font-size:12px;color:#999;">Sin vehículo aprobado</div>'}
+                                <div style="font-size:12px;margin-top:4px;">
+                                    <span style="background:${color}20;color:${color};padding:2px 8px;border-radius:8px;font-weight:600;">
+                                        ${c.estado_trabajo}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function irAConductorEnMapa(id) {
+    cambiarSeccion('livemap');
+    setTimeout(() => {
+        if (typeof centrarEnConductor === 'function') {
+            centrarEnConductor(id);
+        }
+    }, 600);
+}
+
+/* ============================================
+   USUARIOS
+   ============================================ */
+async function cargarUsuarios() {
+    const tbody = $('#usersTableBody');
+    tbody.innerHTML = '<tr><td colspan="7" class="table-loading">Cargando usuarios...</td></tr>';
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/users`);
+        const data = await res.json();
+        if (!data.success || !data.users?.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Sin usuarios</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.users.map(u => `
+            <tr>
+                <td>
+                    <div class="user-cell">
+                        <div class="avatar">${iniciales(u.nombre_completo)}</div>
+                        <div>
+                            <div class="user-name">${u.nombre_completo || '—'}</div>
+                            <small style="color:#999">ID: ${u.id_usuario}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>${u.email || '—'}</td>
+                <td>${u.numero_identidad || '—'}</td>
+                <td>${u.telefono || '—'}</td>
+                <td>${getRolNombre(u.id_rol)}</td>
+                <td><span class="badge ${getBadgeClass(u.estado_cuenta)}">${u.estado_cuenta || 'Activo'}</span></td>
+                <td>
+                    <button class="btn-icon" onclick="verUsuario(${u.id_usuario})">👁️</button>
+                    <button class="btn-icon danger" onclick="bloquearUsuario(${u.id_usuario})">🚫</button>
+                </td>
+            </tr>
+        `).join('');
+        $('#badgeUsers').textContent = data.users.length;
+    } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Error cargando</td></tr>';
+    }
+}
+
+async function verUsuario(id) {
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/users/${id}`);
+        const data = await res.json();
+        if (!data.success) throw new Error();
+        const u = data.user;
+        $('#userModalBody').innerHTML = `
+            <div style="text-align:center;margin-bottom:20px;">
+                <div class="avatar" style="width:80px;height:80px;font-size:28px;margin:0 auto 12px;">
+                    ${iniciales(u.nombre_completo)}
+                </div>
+                <h3>${u.nombre_completo}</h3>
+                <p style="color:#666;">${u.email}</p>
+            </div>
+            <div style="display:grid;gap:12px;">
+                <div><strong>Cédula:</strong> ${u.numero_identidad || '—'}</div>
+                <div><strong>Teléfono:</strong> ${u.telefono || '—'}</div>
+                <div><strong>Rol:</strong> ${getRolNombre(u.id_rol)}</div>
+                <div><strong>Estado:</strong> <span class="badge ${getBadgeClass(u.estado_cuenta)}">${u.estado_cuenta}</span></div>
+                <div><strong>Registro:</strong> ${formatearFecha(u.fecha_registro)}</div>
+            </div>
+        `;
+        openModal('userModal');
+    } catch {
+        showToast('Error cargando usuario', 'error');
+    }
+}
+
+async function bloquearUsuario(id) {
+    if (!confirm('¿Bloquear este usuario?')) return;
+    try {
+        await fetch(`${API_BASE}/api/admin/users/${id}/block`, { method: 'POST' });
+        showToast('Usuario bloqueado', 'success');
+        cargarUsuarios();
+    } catch {
+        showToast('Error', 'error');
+    }
+}
+
+/* ============================================
+   CONDUCTORES
+   ============================================ */
+async function cargarConductores(estado = 'pending') {
+    const grid = $('#driversGrid');
+    grid.innerHTML = '<div class="loading-skeleton"></div>';
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/drivers?status=${estado}`);
+        const data = await res.json();
+        if (!data.success || !data.drivers?.length) {
+            grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🚗</div><h3>Sin conductores</h3></div>`;
+            return;
+        }
+        grid.innerHTML = data.drivers.map(d => `
+            <div class="driver-card">
+                <div class="driver-header">
+                    <div class="avatar">${iniciales(d.nombre_completo)}</div>
+                    <div class="driver-info">
+                        <h4>${d.nombre_completo}</h4>
+                        <p>${d.email}</p>
+                        <p>📱 ${d.telefono || '—'}</p>
+                        ${d.estado_operacion ? `<p>🇻🇪 ${getEstadoNombre(d.estado_operacion)}</p>` : ''}
+                    </div>
+                </div>
+                <div class="driver-actions">
+                    <button class="btn-approve" onclick="aprobarConductor(${d.id_usuario})">✓ Aprobar</button>
+                    <button class="btn-reject" onclick="rechazarConductor(${d.id_usuario})">✕ Rechazar</button>
+                </div>
+            </div>
+        `).join('');
+        $('#badgeDrivers').textContent = data.drivers.length;
+    } catch (err) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Error</div>';
+    }
+}
+
+$$('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        $$('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        cargarConductores(tab.dataset.tab);
+    });
+});
+
+async function aprobarConductor(id) {
+    try {
+        await fetch(`${API_BASE}/api/admin/drivers/${id}/approve`, { method: 'POST' });
+        showToast('Conductor aprobado', 'success');
+        cargarConductores();
+    } catch { showToast('Error', 'error'); }
+}
+
+async function rechazarConductor(id) {
+    if (!confirm('¿Rechazar este conductor?')) return;
+    try {
+        await fetch(`${API_BASE}/api/admin/drivers/${id}/reject`, { method: 'POST' });
+        showToast('Conductor rechazado', 'info');
+        cargarConductores();
+    } catch { showToast('Error', 'error'); }
+}
+
+/* ============================================
+   VEHÍCULOS
+   ============================================ */
+async function cargarVehiculos() {
+    const grid = $('#vehiclesGrid');
+    grid.innerHTML = '<div class="loading-skeleton"></div>';
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/vehicles`);
+        const data = await res.json();
+        if (!data.success || !data.vehicles?.length) {
+            grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🚙</div><h3>Sin vehículos</h3></div>`;
+            return;
+        }
+        grid.innerHTML = data.vehicles.map(v => `
+            <div class="vehicle-card">
+                <div class="vehicle-photos">
+                    ${renderPhoto(v.fotos?.foto_frente, 'Frente')}
+                    ${renderPhoto(v.fotos?.foto_lateral, 'Lateral')}
+                    ${renderPhoto(v.fotos?.foto_interior, 'Interior')}
+                    ${renderPhoto(v.fotos?.foto_placa, 'Placa')}
+                </div>
+                <div class="vehicle-info">
+                    <h4>${v.marca} ${v.modelo} (${v.anio || '—'})</h4>
+                    <p>🎨 ${v.color || '—'} • 🔤 ${v.placa || '—'}</p>
+                    <p>🚗 ${v.tipo_servicio}</p>
+                    <p>👤 ${v.usuarios?.nombre_completo || 'Sin asignar'}</p>
+                    <p>Estado: <span class="badge ${getBadgeClass(v.estado_vehiculo)}">${v.estado_vehiculo}</span></p>
+                </div>
+                <div class="vehicle-actions">
+                    <button class="btn-approve" onclick="aprobarVehiculo(${v.id_vehiculo})">✓ Aprobar</button>
+                    <button class="btn-reject" onclick="rechazarVehiculo(${v.id_vehiculo})">✕ Rechazar</button>
+                </div>
+            </div>
+        `).join('');
+        $('#badgeVehicles').textContent = data.vehicles.length;
+    } catch (err) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Error</div>';
+    }
+}
+
+function renderPhoto(url, titulo) {
+    if (url) {
+        return `<div class="vehicle-photo" onclick="verFoto('${url}')"><img src="${url}" onerror="this.parentElement.innerHTML='🚗'"></div>`;
+    }
+    return `<div class="vehicle-photo">🚗</div>`;
+}
+
+function verFoto(url) {
+    const viewer = document.createElement('div');
+    viewer.className = 'photo-viewer show';
+    viewer.innerHTML = `<button class="photo-viewer-close" onclick="this.parentElement.remove()">×</button><img src="${url}">`;
+    viewer.addEventListener('click', (e) => { if (e.target === viewer) viewer.remove(); });
+    document.body.appendChild(viewer);
+}
+
+async function aprobarVehiculo(id) {
+    try {
+        await fetch(`${API_BASE}/api/admin/vehicles/${id}/approve`, { method: 'POST' });
+        showToast('Vehículo aprobado', 'success');
+        cargarVehiculos();
+    } catch { showToast('Error', 'error'); }
+}
+
+async function rechazarVehiculo(id) {
+    if (!confirm('¿Rechazar este vehículo?')) return;
+    try {
+        await fetch(`${API_BASE}/api/admin/vehicles/${id}/reject`, { method: 'POST' });
+        showToast('Vehículo rechazado', 'info');
+        cargarVehiculos();
+    } catch { showToast('Error', 'error'); }
+}
+
+/* ============================================
+   MAPA EN VIVO
+   ============================================ */
+function initMapa() {
+    if (leafletMap) return;
+    const container = document.getElementById('liveMap');
+    if (!container) return;
+
+    leafletMap = L.map('liveMap').setView([10.4806, -66.9036], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(leafletMap);
+}
+
+async function cargarMapa() {
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/drivers/locations`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || 'Error');
+
+        mapDriversData = data.conductores || [];
+        renderizarMapa();
+        renderizarListaMapa();
+
+        const online = mapDriversData.filter(d => d.estado === 'disponible' || d.estado === 'en_viaje').length;
+        const onlineCount = document.getElementById('onlineCount');
+        if (onlineCount) onlineCount.textContent = `${online} online`;
+        const badge = document.getElementById('badgeOnline');
+        if (badge) badge.textContent = online;
+    } catch (err) {
+        console.error('Error cargando mapa:', err);
+        showToast('Error cargando ubicaciones', 'error');
+    }
+}
+
+function renderizarMapa() {
+    if (!leafletMap) initMapa();
+    if (!leafletMap) return;
+
+    driverMarkers.forEach(m => leafletMap.removeLayer(m));
+    driverMarkers = [];
+
+    const filtroStatus = document.getElementById('filterMapStatus')?.value || '';
+    const filtroEstadoVE = document.getElementById('filterEstadoVE')?.value || '';
+
+    let filtrados = mapDriversData;
+    if (filtroStatus) filtrados = filtrados.filter(d => d.estado === filtroStatus);
+    if (filtroEstadoVE) filtrados = filtrados.filter(d => d.estado_venezuela === filtroEstadoVE);
+
+    filtrados.forEach(driver => {
+        const color = driver.estado === 'disponible' ? '#22c55e' :
+                      driver.estado === 'en_viaje' ? '#f59e0b' :
+                      driver.estado === 'descanso' ? '#ef4444' : '#9ca3af';
+
+        const icon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="width: 32px; height: 32px; background: ${color}; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">🚗</div>`,
+            iconSize: [32, 32], iconAnchor: [16, 16]
+        });
+
+        const marker = L.marker([driver.latitud, driver.longitud], { icon })
+            .addTo(leafletMap)
+            .bindPopup(`
+                <div style="font-family: Inter, sans-serif; min-width: 220px;">
+                    <h4 style="margin: 0 0 8px; font-size: 14px;">${driver.nombre}</h4>
+                    <p style="margin: 4px 0; font-size: 12px; color: #666;">📧 ${driver.email || '—'}</p>
+                    <p style="margin: 4px 0; font-size: 12px; color: #666;">📱 ${driver.telefono || '—'}</p>
+                    ${driver.estado_venezuela ? `<p style="margin: 4px 0; font-size: 12px;">🇻🇪 ${getEstadoNombre(driver.estado_venezuela)}</p>` : ''}
+                    <p style="margin: 8px 0 0; font-size: 12px;">
+                        <span style="background: ${color}20; color: ${color}; padding: 3px 8px; border-radius: 10px; font-weight: 600;">
+                            ${driver.estado}
+                        </span>
+                    </p>
+                </div>
+            `);
+
+        driverMarkers.push(marker);
+    });
+
+    centrarMapa();
+}
+
+function centrarMapa() {
+    if (!leafletMap || driverMarkers.length === 0) return;
+    const group = L.featureGroup(driverMarkers);
+    leafletMap.fitBounds(group.getBounds().pad(0.1));
+    if (driverMarkers.length === 1) leafletMap.setZoom(15);
+}
+
+function renderizarListaMapa() {
+    const list = document.getElementById('mapDriverList');
+    if (!list) return;
+
+    if (!mapDriversData.length) {
+        list.innerHTML = '<p style="color:#999;text-align:center;grid-column:1/-1;padding:20px;">Sin conductores con ubicación registrada</p>';
+        return;
+    }
+
+    const estadoColor = {
+        'disponible': '#22c55e', 'en_viaje': '#f59e0b',
+        'descanso': '#ef4444', 'desconectado': '#9ca3af'
+    };
+
+    list.innerHTML = mapDriversData.map(d => `
+        <div class="map-driver-card" onclick="centrarEnConductor(${d.id_conductor})">
+            <div class="status-dot" style="background: ${estadoColor[d.estado] || '#9ca3af'};">
+                ${iniciales(d.nombre)}
+            </div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:13px;">${d.nombre}</div>
+                <div style="font-size:11px;color:#666;">${d.estado} • ⭐ ${d.calificacion}</div>
+                ${d.estado_venezuela ? `<div style="font-size:11px;color:#1e88e5;">🇻🇪 ${getEstadoNombre(d.estado_venezuela)}</div>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function centrarEnConductor(id) {
+    const driver = mapDriversData.find(d => d.id_conductor === id);
+    if (!driver || !leafletMap) return;
+    leafletMap.setView([driver.latitud, driver.longitud], 16);
+}
+
+/* ============================================
+   ESTADOS DE VENEZUELA
+   ============================================ */
+async function cargarEstadosVenezuela() {
+    try {
+        const res = await fetch(`${API_BASE}/api/estados`);
+        const data = await res.json();
+        if (!data.success) return;
+
+        estadosVenezuela = data.estados || [];
+
+        const select = document.getElementById('filterEstadoVE');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">🇻🇪 Estados de Venezuela (todos)</option>';
+
+        estadosVenezuela.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e.codigo;
+            opt.textContent = `${e.codigo} - ${e.nombre}`;
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        console.error('Error cargando estados:', e);
+    }
+}
+
+/* ============================================
+   TARIFAS
+   ============================================ */
+async function cargarTarifas() {
+    const tbody = $('#tariffsTableBody');
+    tbody.innerHTML = '<tr><td colspan="7" class="table-loading">Cargando tarifas...</td></tr>';
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/tariffs`);
+        const data = await res.json();
+        if (!data.success || !data.tariffs?.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Sin tarifas</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.tariffs.map(t => `
+            <tr>
+                <td><strong>${t.tipo_servicio}</strong><br><small style="color:#888">${t.nombre}</small></td>
+                <td>${t.zona || 'General'}</td>
+                <td>$${parseFloat(t.precio_base || 0).toFixed(2)}</td>
+                <td>$${parseFloat(t.precio_por_km || 0).toFixed(2)}</td>
+                <td>$${parseFloat(t.tarifa_minima || 0).toFixed(2)}</td>
+                <td><span class="badge ${t.activa ? 'success' : 'danger'}">${t.activa ? 'Activa' : 'Inactiva'}</span></td>
+                <td>
+                    <button class="btn-icon" onclick='editarTarifa(${JSON.stringify(t).replace(/'/g, "&apos;")})'>✏️</button>
+                    <button class="btn-icon danger" onclick="eliminarTarifa(${t.id_tarifa})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7" class="table-empty">Error</td></tr>';
+    }
+}
+
+function abrirModalTarifa(tarifa = null) {
+    const esEdicion = !!tarifa;
+    const modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.id = 'tariffModal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>${esEdicion ? '✏️ Editar' : '➕ Nueva'} Tarifa</h2>
+                <button class="modal-close" onclick="cerrarModalTarifa()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>Nombre</label><input type="text" id="tar_nombre" value="${tarifa?.nombre || ''}"></div>
+                <div class="form-group"><label>Tipo de Servicio</label>
+                    <select id="tar_tipo">
+                        ${['Taxi Urbano','Taxi Popular','Femitaxi','Mototaxi','Viajes Nacionales','Flete','Grua']
+                            .map(t => `<option ${tarifa?.tipo_servicio === t ? 'selected' : ''}>${t}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group"><label>Zona</label><input type="text" id="tar_zona" value="${tarifa?.zona || 'General'}"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group"><label>Precio Base ($)</label><input type="number" step="0.01" id="tar_base" value="${tarifa?.precio_base || 2.00}"></div>
+                    <div class="form-group"><label>Por KM ($)</label><input type="number" step="0.01" id="tar_km" value="${tarifa?.precio_por_km || 0.50}"></div>
+                    <div class="form-group"><label>Por Minuto ($)</label><input type="number" step="0.01" id="tar_min" value="${tarifa?.precio_por_minuto || 0}"></div>
+                    <div class="form-group"><label>Tarifa Mínima ($)</label><input type="number" step="0.01" id="tar_minima" value="${tarifa?.tarifa_minima || 3.00}"></div>
+                </div>
+                <button class="btn-primary" style="width:100%;margin-top:16px;" onclick="guardarTarifa(${tarifa?.id_tarifa || 'null'})">
+                    ${esEdicion ? '💾 Actualizar' : '✅ Crear'} Tarifa
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalTarifa() {
+    document.getElementById('tariffModal')?.remove();
+    document.body.style.overflow = '';
+}
+
+function editarTarifa(t) { abrirModalTarifa(t); }
+
+async function guardarTarifa(id) {
+    const datos = {
+        nombre: $('#tar_nombre').value.trim(),
+        tipo_servicio: $('#tar_tipo').value,
+        zona: $('#tar_zona').value.trim(),
+        precio_base: parseFloat($('#tar_base').value),
+        precio_por_km: parseFloat($('#tar_km').value),
+        precio_por_minuto: parseFloat($('#tar_min').value),
+        tarifa_minima: parseFloat($('#tar_minima').value)
+    };
+    try {
+        const url = id ? `${API_BASE}/api/admin/tariffs/${id}` : `${API_BASE}/api/admin/tariffs`;
+        const method = id ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+            method, headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(id ? 'Actualizada' : 'Creada', 'success');
+            cerrarModalTarifa();
+            cargarTarifas();
+        } else throw new Error(data.message);
+    } catch (e) { showToast(e.message || 'Error', 'error'); }
+}
+
+async function eliminarTarifa(id) {
+    if (!confirm('¿Eliminar esta tarifa?')) return;
+    try {
+        await fetch(`${API_BASE}/api/admin/tariffs/${id}`, { method: 'DELETE' });
+        showToast('Eliminada', 'info');
+        cargarTarifas();
+    } catch { showToast('Error', 'error'); }
+}
+
+/* ============================================
+   VIAJES
+   ============================================ */
+async function cargarViajes() {
+    const tbody = $('#tripsTableBody');
+    tbody.innerHTML = '<tr><td colspan="8" class="table-loading">Cargando viajes...</td></tr>';
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/trips`);
+        const data = await res.json();
+        if (!data.success || !data.trips?.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="table-empty">Sin viajes</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.trips.map(t => `
+            <tr>
+                <td>#${t.id_viaje}</td>
+                <td>${t.pasajero_nombre || '—'}</td>
+                <td>${t.conductor_nombre || '—'}</td>
+                <td>${t.origen || '—'} → ${t.destino || '—'}</td>
+                <td>${formatearMoneda(t.tarifa)}</td>
+                <td><span class="badge ${getBadgeClass(t.estado)}">${t.estado}</span></td>
+                <td>${formatearFecha(t.fecha)}</td>
+                <td>
+                    <button class="btn-icon" onclick="verRutaViaje(${t.id_viaje})" title="Ver ruta">🗺️</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="8" class="table-empty">Error</td></tr>';
+    }
+}
+
+/* ============================================
+   VER RUTA DEL VIAJE
+   ============================================ */
+async function verRutaViaje(tripId) {
+    openModal('tripRouteModal');
+
+    document.getElementById('tripInfo').innerHTML = '<div class="loading-skeleton" style="height: 80px;"></div>';
+    document.getElementById('tripRouteMap').innerHTML = '';
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/trips/${tripId}/detail`);
+        const data = await res.json();
+
+        if (!data.success) throw new Error(data.message);
+
+        const viaje = data.viaje;
+        const conductor = data.conductor;
+        const pasajero = data.pasajero;
+        const ruta = data.ruta || [];
+
+        document.getElementById('tripRouteTitle').textContent =
+            `🗺️ Viaje #${tripId} — ${viaje.origen} → ${viaje.destino}`;
+
+        document.getElementById('tripInfo').innerHTML = `
+            <div class="route-info-grid">
+                <div class="route-info-item">
+                    <div class="label">👤 Conductor</div>
+                    <div class="value">${conductor?.nombre_completo || '—'}</div>
+                    <div class="sub">📱 ${conductor?.telefono || '—'}</div>
+                </div>
+                <div class="route-info-item">
+                    <div class="label">🧑 Pasajero</div>
+                    <div class="value">${pasajero?.nombre_completo || '—'}</div>
+                    <div class="sub">📱 ${pasajero?.telefono || '—'}</div>
+                </div>
+                <div class="route-info-item">
+                    <div class="label">💰 Tarifa</div>
+                    <div class="value">$${parseFloat(viaje.tarifa || 0).toFixed(2)}</div>
+                    <div class="sub">${ruta.length} puntos GPS • ${viaje.estado}</div>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            const mapContainer = document.getElementById('tripRouteMap');
+            mapContainer.innerHTML = '';
+
+            if (tripRouteMap) {
+                tripRouteMap.remove();
+                tripRouteMap = null;
+            }
+
+            if (!ruta.length) {
+                mapContainer.innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;flex-direction:column;gap:8px;">
+                        <div style="font-size:48px;">🗺️</div>
+                        <div>Sin datos de ruta para este viaje</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const inicio = [parseFloat(ruta[0].latitud), parseFloat(ruta[0].longitud)];
+
+            tripRouteMap = L.map('tripRouteMap').setView(inicio, 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap',
+                maxZoom: 19
+            }).addTo(tripRouteMap);
+
+            const puntos = ruta.map(p => [parseFloat(p.latitud), parseFloat(p.longitud)]);
+
+            L.polyline(puntos, {
+                color: '#1e88e5',
+                weight: 5,
+                opacity: 0.85
+            }).addTo(tripRouteMap);
+
+            const inicioPoint = puntos[0];
+            const finPoint = puntos[puntos.length - 1];
+
+            L.marker(inicioPoint, {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div style="background: #22c55e; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); white-space: nowrap;">🟢 INICIO</div>',
+                    iconSize: [90, 28],
+                    iconAnchor: [45, 14]
+                })
+            }).addTo(tripRouteMap).bindPopup(`<b>Origen</b><br>${viaje.origen || '—'}`);
+
+            L.marker(finPoint, {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div style="background: #e53935; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); white-space: nowrap;">🔴 FIN</div>',
+                    iconSize: [70, 28],
+                    iconAnchor: [35, 14]
+                })
+            }).addTo(tripRouteMap).bindPopup(`<b>Destino</b><br>${viaje.destino || '—'}`);
+
+            if (puntos.length > 2) {
+                ruta.slice(1, -1).forEach((p, i) => {
+                    L.circleMarker([parseFloat(p.latitud), parseFloat(p.longitud)], {
+                        radius: 4,
+                        fillColor: '#1e88e5',
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.9
+                    }).addTo(tripRouteMap).bindPopup(`
+                        <b>Punto #${p.orden}</b><br>
+                        ${p.velocidad_kmh ? `🚀 ${parseFloat(p.velocidad_kmh).toFixed(1)} km/h<br>` : ''}
+                        ${p.fecha ? `🕐 ${formatearHora(p.fecha)}` : ''}
+                    `);
+                });
+            }
+
+            const group = L.featureGroup([
+                L.marker(inicioPoint),
+                L.marker(finPoint)
+            ]);
+
+            tripRouteMap.fitBounds(L.polyline(puntos).getBounds().pad(0.15));
+
+        }, 200);
+
+    } catch (err) {
+        console.error('Error cargando ruta:', err);
+        document.getElementById('tripInfo').innerHTML = `
+            <div style="padding:20px;background:#fee2e2;border-radius:12px;color:#991b1b;">
+                <strong>Error:</strong> ${err.message}
+            </div>
+        `;
+    }
+}
+
+/* ============================================
+   TICKETS
+   ============================================ */
+async function cargarTickets() {
+    const list = $('#ticketsList');
+    list.innerHTML = '<div class="loading-skeleton"></div>';
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/tickets`);
+        const data = await res.json();
+        if (!data.success || !data.tickets?.length) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-icon">🎫</div><h3>Sin tickets</h3></div>';
+            return;
+        }
+        list.innerHTML = data.tickets.map(t => `
+            <div class="ticket-item">
+                <div class="ticket-info">
+                    <h4>${t.asunto}</h4>
+                    <p>${t.usuario_nombre || 'Anónimo'} • ${formatearFecha(t.fecha)}</p>
+                </div>
+                <span class="badge ${t.prioridad === 'alta' ? 'danger' : 'info'}">${t.prioridad || 'Normal'}</span>
+            </div>
+        `).join('');
+    } catch {
+        list.innerHTML = '<div class="empty-state">Error</div>';
+    }
+}
+
+/* ============================================
+   TASA BCV
+   ============================================ */
+async function cargarTasaCambio() {
+    try {
+        const res = await fetch(`${API_BASE}/api/exchange-rate`);
+        const data = await res.json();
+        if (data.success) $('#exchangeRate').textContent = `Bs. ${data.rate.toFixed(2)}`;
+    } catch {
+        $('#exchangeRate').textContent = 'Bs. 849.56';
+    }
+}
+
+/* ============================================
+   LOGOUT / REFRESH
+   ============================================ */
+$('#btnLogout').addEventListener('click', async () => {
+    if (!confirm('¿Cerrar sesión?')) return;
+    await fetch(`${API_BASE}/api/logout`, { method: 'POST' });
+    window.location.href = '/';
+});
+
+$('#btnRefresh').addEventListener('click', () => {
+    showToast('Actualizando...', 'info');
+    cambiarSeccion(currentSection);
+});
+
+$('#globalSearch').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        const q = e.target.value.trim();
+        if (q) {
+            cambiarSeccion('users');
+            $('#searchUsers').value = q;
+            cargarUsuarios();
+        }
+    }
+});
+
+/* ============================================
+   INIT
+   ============================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    cargarOverview();
+    cargarTasaCambio();
+    cargarEstadosVenezuela();
+    cargarDisponibilidad();
+
+    setInterval(cargarTasaCambio, 5 * 60 * 1000);
+    setInterval(() => {
+        if (currentSection === 'livemap') cargarMapa();
+        if (currentSection === 'disponibilidad') cargarDisponibilidad();
+    }, 15000);
+});
+</script>
+</body>
+</html>
